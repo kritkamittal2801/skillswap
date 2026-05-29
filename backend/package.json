@@ -1,0 +1,6 @@
+{
+  "scripts": {
+  "start": "node backend.js",
+  "dev": "nodemon backend.js"
+}
+}
