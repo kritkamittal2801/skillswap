@@ -8,6 +8,8 @@ import Signup from "./pages/Signup";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Profile from "./pages/Profile";
+import CreateRequest from "./pages/CreateRequest";
+
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 
@@ -44,6 +46,11 @@ function App() {
           </ProtectedRoute>
         }
         />
+
+        <Route
+  path="/requests/create"
+  element={<CreateRequest />}
+/>
 
       </Routes>
 
