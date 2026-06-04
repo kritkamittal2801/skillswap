@@ -25,7 +25,8 @@ const Login = () => {
                 formData
             );
 
-            login(response.data.accessToken);
+            console.log(response.data);
+            login(response.data.accessToken,response.data.user);
 
             navigate("/dashboard");
 

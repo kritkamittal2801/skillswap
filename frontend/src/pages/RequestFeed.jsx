@@ -1,8 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useContext } from "react";
 import api from "../services/api.js";
 import RequestCard from "../components/RequestCard";
+import { AuthContext } from "../contexts/AuthContext.jsx";
 
 const RequestFeed = () => {
+  const { user } =useContext(AuthContext);
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [subjectFilter, setSubjectFilter] =useState("");
@@ -12,6 +14,9 @@ const RequestFeed = () => {
     const fetchRequests = async () => {
       try {
         const response = await api.get("/requests");
+        console.log("Logged in user:", user);
+console.log("Requests:", requests);
+
 
         setRequests(response.data.requests);
       } catch (error) {
@@ -19,14 +24,17 @@ const RequestFeed = () => {
       } finally {
         setLoading(false);
       }
+
     };
 
     fetchRequests();
   }, []);
-
+  
+    
   // Filter requests
   const filteredRequests =
   requests.filter((request) => {
+    
     const subjectMatch =
       !subjectFilter ||
       request.subject === subjectFilter;
@@ -35,8 +43,14 @@ const RequestFeed = () => {
       !modeFilter ||
       request.mode === modeFilter;
 
+      const notOwnRequest =
+      request.requester?._id !==
+      user?._id;
+
+
     return (
-      subjectMatch && modeMatch
+      subjectMatch && modeMatch &&
+      notOwnRequest
     );
   });
 
@@ -118,7 +132,7 @@ const RequestFeed = () => {
 
       {filteredRequests.length === 0 ? (
         <div className="text-center text-gray-500">
-          No requests found for this subject
+          No requests found 
         </div>
       ) : (
         <div className="grid gap-4">

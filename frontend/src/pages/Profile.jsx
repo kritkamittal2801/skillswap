@@ -37,14 +37,22 @@ const Profile = () => {
         try {
 
             const token = localStorage.getItem("token");
+            
+            const newSkills = skills
+            .split(",")
+            .map(skill => skill.trim())
+            .filter(skill => skill !== "");
+
 
             await api.put(
                 "/users/profile",
                 {
-                    skillsOffered: skills
-                        .split(",")
-                        .map(skill => skill.trim())
-                        .filter(skill => skill !== "")
+                    skillsOffered: [
+                        ...new Set([
+                            ...(profile?.skillsOffered || []),
+                            ...newSkills
+                        ])
+                        ]
                 },
                 {
                     headers: {
