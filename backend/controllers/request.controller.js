@@ -1,4 +1,8 @@
 import {Request} from "../models/Request.js";
+import  {extractTopics} from"../services/aiService.js";
+import {findMatches} from "../services/matchingService.js";
+import { Notification } from "../models/Notification.js";
+import {emitNotification} from "../socket/socketManager.js";
 
 export const createRequest = async (req, res) => {
   try {
@@ -9,7 +13,9 @@ export const createRequest = async (req, res) => {
     success: false,
     message: "All fields are required",
   });
-}
+} 
+
+  const topics = await extractTopics(description);
 
     const request = await Request.create({
       requester: req.user._id,
@@ -17,7 +23,33 @@ export const createRequest = async (req, res) => {
       subject,
       mode,
       coinAmount,
+      topics
     });
+    
+    const matches = await findMatches( request.topics,request.requester );
+    
+    
+    for (const match of matches) {
+
+  const notification =
+    await Notification.create({
+      recipient:
+        match.user._id,
+
+      message:
+        "A new request matches your skills",
+    });
+
+    
+  emitNotification(
+    match.user._id.toString(),
+    notification
+  );
+
+  
+}
+
+
 
     res.status(201).json({
       success: true,

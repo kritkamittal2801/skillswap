@@ -33,6 +33,10 @@ const requestSchema = new Schema(
       type: String,
       default: "open",
     },
+    topics:{
+      type:[String],
+      default:[],
+    }
   },
   { timestamps: true }
 );

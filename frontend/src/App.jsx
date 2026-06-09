@@ -1,8 +1,4 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-} from "react-router-dom";
+import {BrowserRouter,Routes,Route} from "react-router-dom";
 
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
@@ -11,11 +7,84 @@ import Profile from "./pages/Profile";
 import CreateRequest from "./pages/CreateRequest";
 import RequestFeed from "./pages/RequestFeed";
 import RequestDetail from "./pages/RequestDetail";
-
-
 import ProtectedRoute from "./routes/ProtectedRoute";
+import { useEffect,useState } from "react";
+import socket from "./socket";
 
 function App() {
+  const [notifications,setNotifications] = useState([]);
+
+  useEffect(() => {
+
+  socket.on(
+    "newNotification",
+    (notification) => {
+
+      console.log(
+        "New notification:",
+        notification
+      );
+
+      setNotifications(
+        (prev) => [
+          notification,
+          ...prev,
+        ]
+      );
+
+    }
+  );
+
+  return () => {
+    socket.off(
+      "newNotification"
+    );
+  };
+
+}, []);
+
+   useEffect(() => {
+
+  socket.on("connect", () => {
+
+    console.log(
+      "Frontend connected:",
+      socket.id
+    );
+
+    const user = JSON.parse(
+      localStorage.getItem("user")
+    );
+
+
+    if (user) {
+
+      console.log(
+        "Registering user:",
+        user._id
+      );
+
+      socket.emit(
+        "registerUser",
+        user._id
+      );
+    }
+
+  });
+
+  socket.on("connect_error", (error) => {
+    console.log(
+      "Connection error:",
+      error.message
+    );
+  });
+
+  return () => {
+    socket.off("connect");
+    socket.off("connect_error");
+  };
+
+}, []);
 
   return (
 

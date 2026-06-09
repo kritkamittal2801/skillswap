@@ -32,7 +32,11 @@ const userSchema = new Schema(
     skillsOffered: {
         type: [String],
         default: []
-    }
+    },
+    skillTags: {
+      type: [String],
+      default: [],
+},
   },
   {
     timestamps: true,
