@@ -1,31 +1,62 @@
 import jwt from "jsonwebtoken";
 
 const verifyJWT = async (req, res, next) => {
-    try {
 
-        const token = req.header("Authorization")?.replace("Bearer ", "");
+  const authHeader =
+    req.header("Authorization");
 
-        if (!token) {
-            return res.status(401).json({
-                message: "Unauthorized request"
-            });
-        }
+  console.log(
+    "Auth Header:",
+    authHeader
+  );
 
-        const decodedToken = jwt.verify(
-            token,
-            process.env.ACCESS_TOKEN_SECRET
-        );
+  try {
 
-        req.user = decodedToken;
+    const token =
+      authHeader?.replace(
+        "Bearer ",
+        ""
+      );
 
-        next();
+    console.log(
+      "Extracted Token:",
+      token
+    );
 
-    } catch (error) {
-
-        return res.status(401).json({
-            message: "Invalid token"
-        });
+    if (!token) {
+      return res.status(401).json({
+        message:
+          "Unauthorized request"
+      });
     }
+
+    const decodedToken =
+      jwt.verify(
+        token,
+        process.env.ACCESS_TOKEN_SECRET
+      );
+
+    console.log(
+      "Decoded Token:",
+      decodedToken
+    );
+
+    req.user = decodedToken;
+
+    next();
+
+  } catch (error) {
+
+    console.log(
+      "JWT Error:",
+      error.message
+    );
+
+    return res.status(401).json({
+      message: "Invalid token"
+    });
+
+  }
 };
 
 export default verifyJWT;

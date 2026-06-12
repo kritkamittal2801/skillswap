@@ -8,12 +8,26 @@ dotenv.config();
 export const extractTopics = async (
   text
 ) => {
+
   const prompt = `
-Extract learning topics from this request.
+Extract only the most relevant learning topics.
 
-Return ONLY a comma separated list.
+Rules:
+- Return ONLY a valid JSON array.
+- No markdown.
+- No explanations.
+- Maximum 5 topics.
+- Each topic must be a string.
 
-Request:
+Example:
+
+Input:
+"I need help with React Hooks"
+
+Output:
+["React","Hooks","React Hooks","Frontend Development","Web Development","Frontend"]
+
+Text:
 ${text}
 `;
 
@@ -23,13 +37,22 @@ ${text}
       contents: prompt,
     });
 
-const result = response.text;
+  const cleaned =
+    response.text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
 
-const topics = result
-  .split(",")
-  .map((topic) => topic.trim());
+  try {
+    return JSON.parse(cleaned);
+  } catch (error) {
+    console.log(
+      "Topic extraction parse error:",
+      cleaned
+    );
 
-return topics;
+    return [];
+  }
 };
 
 export const expandSkills = async (

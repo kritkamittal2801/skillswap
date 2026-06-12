@@ -27,10 +27,10 @@ export const createRequest = async (req, res) => {
     });
     
     const matches = await findMatches( request.topics,request.requester );
-    
+    console.log(matches);
     
     for (const match of matches) {
-
+      
   const notification =
     await Notification.create({
       recipient:

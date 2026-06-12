@@ -10,9 +10,49 @@ import RequestDetail from "./pages/RequestDetail";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { useEffect,useState } from "react";
 import socket from "./socket";
+import NotificationBell from "./components/NotificationBell.jsx";
+import api from "./services/api.js";
 
 function App() {
   const [notifications,setNotifications] = useState([]);
+
+  useEffect(() => {
+
+  const fetchNotifications =
+  async () => {
+
+    try {
+
+      const token =
+        localStorage.getItem(
+          "token"
+        );
+
+      const response =
+        await api.get(
+          "/notifications",
+          {
+            headers: {
+              Authorization:
+                `Bearer ${token}`
+            }
+          }
+        );
+
+      setNotifications(
+        response.data.notifications
+      );
+
+    } catch (error) {
+      console.log(error);
+    }
+
+  };
+
+  fetchNotifications();
+
+}, []);
+
 
   useEffect(() => {
 
@@ -88,6 +128,12 @@ function App() {
 
   return (
 
+    <>
+    <NotificationBell
+      notifications={notifications}
+    />
+
+
       <Routes>
 
         <Route
@@ -133,6 +179,7 @@ function App() {
       element={<RequestDetail />}
     />
       </Routes>
+     </>
 
   );
 }

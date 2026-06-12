@@ -10,8 +10,9 @@ import aiRoutes from "./routes/ai.routes.js";
 import http from "http";
 import { Server } from "socket.io";
 dotenv.config();
-import {setIo,getOnlineUsers,
-} from "./socket/socketManager.js";
+import {setIo,getOnlineUsers} from "./socket/socketManager.js";
+import notificationRoutes from "./routes/notification.routes.js";
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -34,6 +35,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/ai",aiRoutes);
+app.use("/api/notifications",notificationRoutes);
 
 app.get("/", (req, res) => {
   res.send("SkillSwap API Running");
