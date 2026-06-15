@@ -36,7 +36,16 @@ const requestSchema = new Schema(
     topics:{
       type:[String],
       default:[],
-    }
+    },
+    status: {
+      type: String,
+      enum: [
+        "open",
+        "accepted",
+        "completed"
+      ],
+      default: "open"
+},
   },
   { timestamps: true }
 );

@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../services/api.js";
-
+import { useNavigate } from "react-router-dom";
 
 const RequestDetail=()=>{
+  const navigate = useNavigate();
 const { id } = useParams();
 const [request, setRequest] = useState(null);
 
@@ -12,6 +13,39 @@ const [loading, setLoading] =
 
 const [error, setError] =
   useState("");
+
+const handleAccept =
+async () => {
+
+  try {
+
+    const token =
+      localStorage.getItem(
+        "token"
+      );
+
+    const response =
+      await api.post(
+        `/sessions/accept/${id}`,
+        {},
+        {
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        }
+      );
+
+    navigate(
+      `/sessions/${response.data.session._id}`
+    );
+
+  } catch (error) {
+
+    console.log(error);
+
+  }
+};
 
 useEffect(() => {
   const fetchRequest = async () => {
@@ -63,6 +97,17 @@ return (
       Coins:
       {request.coinAmount}
     </p>
+    
+  {request.status === "accepted" ? (
+  <button disabled>
+    Already Accepted
+  </button>
+) : (
+  <button onClick={handleAccept}>
+    Accept Request
+  </button>
+)}
+
   </div>
 );
 };

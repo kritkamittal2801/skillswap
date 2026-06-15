@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
@@ -12,6 +11,7 @@ import { Server } from "socket.io";
 dotenv.config();
 import {setIo,getOnlineUsers} from "./socket/socketManager.js";
 import notificationRoutes from "./routes/notification.routes.js";
+import sessionRoutes from "./routes/session.routes.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -36,6 +36,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/requests", requestRoutes);
 app.use("/api/ai",aiRoutes);
 app.use("/api/notifications",notificationRoutes);
+app.use("/api/sessions",sessionRoutes);
 
 app.get("/", (req, res) => {
   res.send("SkillSwap API Running");
@@ -47,13 +48,9 @@ server.listen(PORT, () => {
 
 });
 
-
-
 io.on("connection", (socket) => {
 
   const onlineUsers = getOnlineUsers();
-
-  
 
   socket.on("registerUser", (userId) => {
 

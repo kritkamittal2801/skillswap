@@ -12,6 +12,7 @@ import { useEffect,useState } from "react";
 import socket from "./socket";
 import NotificationBell from "./components/NotificationBell.jsx";
 import api from "./services/api.js";
+import SessionPage from "./pages/SessionPage.jsx";
 
 function App() {
   const [notifications,setNotifications] = useState([]);
@@ -178,6 +179,13 @@ function App() {
       path="/requests/:id"
       element={<RequestDetail />}
     />
+
+    <Route
+  path="/sessions/:id"
+  element={
+    <SessionPage />
+  }
+/>
       </Routes>
      </>
 
