@@ -12,6 +12,12 @@ const SessionPage = () => {
 
     const [seconds,setSeconds] = useState(0);
 
+    const [completed, setCompleted] =
+  useState(false);
+
+const [error, setError] =
+  useState("");
+
     const handleStart = async () => {
 
   try {
@@ -30,15 +36,13 @@ const SessionPage = () => {
           },
         }
       );
-
+      console.log(response.data.session);
     setSession(
       response.data.session
     );
 
   } catch (error) {
 
-    console.log(error.response?.status);
-  console.log(error.response?.data);
   console.log(error.message);
 
   }
@@ -181,6 +185,60 @@ const formatTime =
     return <h2>Loading...</h2>;
   }
 
+  const handleComplete =
+async () => {
+
+  try {
+
+    const token =
+      localStorage.getItem(
+        "token"
+      );
+
+    await api.put(
+      `/sessions/complete/${id}`,
+      {},
+      {
+        headers: {
+          Authorization:
+          `Bearer ${token}`
+        }
+      }
+    );
+
+    setCompleted(true);
+  } catch (error) {
+
+    setError(
+      error.response?.data?.message ||
+      "Something went wrong"
+    );
+
+
+  }
+
+};
+
+if (completed) {
+
+  return (
+
+    <div>
+
+      <h2>
+         Session Completed
+      </h2>
+
+      <p>
+        Coins transferred successfully.
+      </p>
+
+    </div>
+
+  );
+
+}
+
   return (
 
     <div>
@@ -230,10 +288,26 @@ const formatTime =
   )
 }
 
-<p>
-  Timer:
-  {formatTime(seconds)}
-</p>
+{error && (
+  <p style={{ color: "red" }}>
+    {error}
+  </p>
+)}
+
+{
+  session.status ===
+  "active" && (
+
+    <button
+      onClick={
+        handleComplete
+      }
+    >
+      Complete Session
+    </button>
+
+  )
+}
     </div>
 
   );

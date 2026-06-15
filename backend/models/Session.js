@@ -25,6 +25,10 @@ new mongoose.Schema(
       type: String,
       required: true,
     },
+    coinAmount: {
+        type: Number,
+        required: true
+        },
 
     status: {
       type: String,

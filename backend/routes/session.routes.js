@@ -6,6 +6,7 @@ from "../middleware/auth.middleware.js";
 import {acceptRequest}from "../controllers/session.controller.js";
 import { getSession } from "../controllers/session.controller.js";
 import { startSession } from "../controllers/session.controller.js";
+import { completeSession } from "../controllers/session.controller.js";
 
 const router =
   express.Router();
@@ -26,5 +27,11 @@ router.put(
   "/start/:id",
   verifyJWT,
   startSession
+);
+
+router.put(
+  "/complete/:id",
+  verifyJWT,
+  completeSession
 );
 export default router;
