@@ -15,6 +15,7 @@ const CreateRequest = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [barterOffer,setBarterOffer]=useState("");
 
   const handleChange = (e) => {
     setFormData({
@@ -38,6 +39,16 @@ const CreateRequest = () => {
       return;
     }
 
+    if (
+  formData.mode === "barter" &&
+  !barterOffer.trim()
+) {
+  setError(
+    "Please describe what you can teach"
+  );
+  return;
+}
+
     try {
       setLoading(true);
 
@@ -45,7 +56,7 @@ const CreateRequest = () => {
 
       const response = await axios.post(
         "http://localhost:5000/api/requests",
-        formData,
+        {...formData,barterOffer},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -61,7 +72,7 @@ const CreateRequest = () => {
         mode: "paid",
         coinAmount: "",
       });
-
+      setBarterOffer("");
       console.log(response.data);
 
       setTimeout(() => {
@@ -163,7 +174,6 @@ const CreateRequest = () => {
             </select>
           </div>
 
-          {/* Coin Amount */}
           {formData.mode === "paid" && (
             <div>
               <label className="block mb-2 font-medium">
@@ -180,6 +190,24 @@ const CreateRequest = () => {
               />
             </div>
           )}
+
+              {formData.mode === "barter" && (
+      <div>
+        <label className="block mb-2 font-medium">
+          What can you teach in return?
+        </label>
+
+        <textarea
+          rows="4"
+          placeholder="Example: I can teach React, build frontend applications, work with hooks, state management and JavaScript."
+          value={barterOffer}
+          onChange={(e) =>
+            setBarterOffer(e.target.value)
+          }
+          className="w-full border rounded-lg p-3 outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+    )}
 
           {/* Submit Button */}
           <button

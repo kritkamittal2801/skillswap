@@ -50,8 +50,7 @@ console.log("request.coinAmount:", request.coinAmount);
 
         helper:
           req.user._id,
-        coinAmount: request.coinAmount,
-
+        coinAmount:request.mode === "paid"? request.coinAmount : 0,
 
         meetLink,
         
@@ -68,6 +67,9 @@ console.log("request.coinAmount:", request.coinAmount);
     });
 
   } catch (error) {
+
+    console.log("ACCEPT REQUEST ERROR:");
+  console.log(error);
 
     res.status(500).json({
       success: false,

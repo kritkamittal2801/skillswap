@@ -37,6 +37,14 @@ const requestSchema = new Schema(
       type:[String],
       default:[],
     },
+    barterOffer:{
+      type:String
+    },
+    exchangeTopics: [
+  {
+    type: String,
+  },
+],
     status: {
       type: String,
       enum: [
@@ -46,6 +54,7 @@ const requestSchema = new Schema(
       ],
       default: "open"
 },
+    
   },
   { timestamps: true }
 );

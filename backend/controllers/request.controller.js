@@ -6,7 +6,7 @@ import {emitNotification} from "../socket/socketManager.js";
 
 export const createRequest = async (req, res) => {
   try {
-    const { description, subject, mode, coinAmount } = req.body;
+    const { description, subject, mode, coinAmount,barterOffer } = req.body;
 
     if (!description || !subject || !mode) {
   return res.status(400).json({
@@ -14,6 +14,33 @@ export const createRequest = async (req, res) => {
     message: "All fields are required",
   });
 } 
+
+if (mode === "paid" && !coinAmount) {
+  return res.status(400).json({
+    success: false,
+    message:
+      "Coin amount required",
+  });
+}
+
+if ( mode === "barter" && (!barterOffer)) {
+  return res.status(400).json({
+    success: false,
+    message:
+      "Exchange topics required",
+  });
+}
+
+let exchangeTopics = [];
+
+if (mode === "barter") {
+
+  exchangeTopics =
+    await extractTopics(
+      barterOffer
+    );
+
+}
 
   const topics = await extractTopics(description);
 
@@ -23,6 +50,8 @@ export const createRequest = async (req, res) => {
       subject,
       mode,
       coinAmount,
+      barterOffer,
+      exchangeTopics,
       topics
     });
     

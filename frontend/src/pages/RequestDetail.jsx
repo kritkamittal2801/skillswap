@@ -93,10 +93,42 @@ return (
       {request.mode}
     </p>
 
-    <p>
-      Coins:
-      {request.coinAmount}
-    </p>
+
+    {
+  request.mode === "paid" && (
+
+    <div>
+
+      <h3>
+        Payment
+      </h3>
+
+      <p>
+        {request.coinAmount} Coins
+      </p>
+
+    </div>
+
+  )
+}
+
+    {
+  request.mode === "barter" && (
+
+    <div>
+
+      <h3>
+        Barter Offer
+      </h3>
+
+      <p>
+        {request.barterOffer}
+      </p>
+
+    </div>
+
+  )
+}
     
   {request.status === "accepted" ? (
   <button disabled>

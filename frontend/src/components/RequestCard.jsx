@@ -17,6 +17,7 @@ const RequestCard = ({ request }) => {
         >
           {request.mode}
         </span>
+        
       </div>
 
       <p className="text-gray-600 mb-3">
@@ -27,6 +28,19 @@ const RequestCard = ({ request }) => {
         <p className="font-medium mb-2">
           💰 {request.coinAmount} Coins
         </p>
+      )}
+
+      {request.mode === "barter" && (
+        <div className="font-medium mb-2">
+         <p>
+        Can Teach:
+      </p>
+      <p>
+        {
+          request.exchangeTopics?.slice(0, 3).join(", ")
+        }
+      </p>
+        </div>
       )}
 
       <p className="text-sm text-gray-500 mb-4">
