@@ -209,3 +209,72 @@ res.status(200).json({
     "Session completed"
 });
 }
+
+export const confirmSession =
+async (req, res) => {
+
+  try {
+
+    const session =
+      await Session.findById(
+        req.params.id
+      );
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Session not found",
+      });
+    }
+
+    if (
+      session.learner.toString()
+      === req.user._id
+    ) {
+
+      session.learnerConfirmed =
+        true;
+
+    }
+
+    if (
+      session.helper.toString()
+      === req.user._id
+    ) {
+
+      session.helperConfirmed =
+        true;
+
+    }
+
+    // BOTH confirmed
+
+    if (
+      session.learnerConfirmed &&
+      session.helperConfirmed
+    ) {
+
+      session.status =
+        "completed";
+
+    }
+
+    await session.save();
+
+    res.status(200).json({
+      success: true,
+      session,
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      success: false,
+      message:
+        error.message,
+    });
+
+  }
+
+};

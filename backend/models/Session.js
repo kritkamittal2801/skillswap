@@ -25,6 +25,15 @@ new mongoose.Schema(
       type: String,
       required: true,
     },
+    learnerConfirmed: {
+        type: Boolean,
+        default: false,
+        },
+
+    helperConfirmed: {
+        type: Boolean,
+        default: false,
+        },
     coinAmount: {
         type: Number,
         required: true

@@ -7,6 +7,7 @@ import {acceptRequest}from "../controllers/session.controller.js";
 import { getSession } from "../controllers/session.controller.js";
 import { startSession } from "../controllers/session.controller.js";
 import { completeSession } from "../controllers/session.controller.js";
+import { confirmSession } from "../controllers/session.controller.js";
 
 const router =
   express.Router();
@@ -34,4 +35,6 @@ router.put(
   verifyJWT,
   completeSession
 );
+
+router.put("/:id/confirm",verifyJWT,confirmSession);
 export default router;
