@@ -3,10 +3,13 @@ import  {extractTopics} from"../services/aiService.js";
 import {findMatches} from "../services/matchingService.js";
 import { Notification } from "../models/Notification.js";
 import {emitNotification} from "../socket/socketManager.js";
+import { User } from "../models/User.js";
 
 export const createRequest = async (req, res) => {
   try {
     const { description, subject, mode, coinAmount,barterOffer } = req.body;
+    
+    const user = await User.findById(req.user._id);
 
     if (!description || !subject || !mode) {
   return res.status(400).json({
@@ -21,6 +24,19 @@ if (mode === "paid" && !coinAmount) {
     message:
       "Coin amount required",
   });
+}
+
+if (
+  mode === "paid" &&
+  user.coins < coinAmount
+) {
+
+  return res.status(400).json({
+    success: false,
+    message:
+      "You do not have enough coins",
+  });
+
 }
 
 if ( mode === "barter" && (!barterOffer)) {
@@ -54,6 +70,7 @@ if (mode === "barter") {
       exchangeTopics,
       topics
     });
+
     
     const matches = await findMatches( request.topics,request.requester );
     console.log(matches);

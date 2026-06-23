@@ -15,6 +15,14 @@ const SessionPage = () => {
 
   const [error, setError] = useState("");
 
+  const [stars, setStars] = useState(0);
+
+  const [review, setReview] = useState("");
+
+  const [ratingSubmitted, setRatingSubmitted] = useState(false);
+
+  const [alreadyRated, setAlreadyRated] = useState(false);
+
   const handleStart = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -34,6 +42,18 @@ const SessionPage = () => {
       console.log(error.message);
     }
   };
+
+  useEffect(() => {
+    socket.on("sessionUpdated", (updatedSession) => {
+      if (updatedSession._id === id) {
+        setSession(updatedSession);
+      }
+    });
+
+    return () => {
+      socket.off("sessionUpdated");
+    };
+  }, [id]);
 
   useEffect(() => {
     socket.on("sessionStarted", (data) => {
@@ -93,8 +113,12 @@ const SessionPage = () => {
       );
 
       fetchSession();
+      console.log(session);
     } catch (error) {
+      console.log("CONFIRM SESSION ERROR:");
       console.log(error);
+
+      setError(error.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -113,9 +137,26 @@ const SessionPage = () => {
       console.log(error);
     }
   };
+  const checkRating = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await api.get(`/ratings/check/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setAlreadyRated(response.data.alreadyRated);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
     fetchSession();
+
+    checkRating();
   }, [id]);
 
   if (!session) {
@@ -142,16 +183,86 @@ const SessionPage = () => {
     }
   };
 
-  if (completed) {
+  const submitRating = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      await api.post(
+        `/ratings/${id}`,
+        {
+          stars,
+          review,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      setRatingSubmitted(true);
+      setAlreadyRated(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  if (session?.status === "completed") {
+    const canRate =
+      session.request?.mode === "barter" ||
+      (session.request?.mode === "paid" &&
+        session.learner?._id === currentUser._id);
     return (
       <div>
         <h2>Session Completed</h2>
+        {session.request.mode === "paid" ? (
+          <p>Coins transferred successfully.</p>
+        ) : (
+          <p>Barter session completed successfully.</p>
+        )}
 
-        <p>Coins transferred successfully.</p>
+        {canRate && !ratingSubmitted && !alreadyRated && (
+          <>
+            <h3>Rate Your Experience</h3>
+
+            <div>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setStars(star)}
+                  style={{
+                    fontSize: "20px",
+                    border: "none",
+                    background: "transparent",
+                    cursor: "pointer",
+                    color: star <= stars ? "#FFD700" : "#ccc",
+                  }}
+                >
+                  {star <= stars ? "★" : "☆"}
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              placeholder="Write a review..."
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+            />
+
+            <br />
+
+            <button onClick={submitRating}>Submit Rating</button>
+          </>
+        )}
+        {ratingSubmitted && <h3>Thank you for your review!</h3>}
+
+        {alreadyRated && !ratingSubmitted && (
+          <p>You have already submitted a rating.</p>
+        )}
       </div>
     );
   }
-
   return (
     <div>
       <h2>Session Started</h2>
@@ -172,48 +283,22 @@ const SessionPage = () => {
       </p>
 
       <p>
-  Learner Confirmed:
-  {
-    session.learnerConfirmed
-      ? "YES"
-      : "NO"
-  }
-</p>
+        Learner Confirmed:
+        {session.learnerConfirmed ? "YES" : "NO"}
+      </p>
 
-<p>
-  Helper Confirmed:
-  {
-    session.helperConfirmed
-      ? "YES"
-      : "NO"
-  }
-</p>
+      <p>
+        Helper Confirmed:
+        {session.helperConfirmed ? "YES" : "NO"}
+      </p>
 
-{
-  session.learner?._id ===
-    currentUser._id &&
-  !session.helperConfirmed && (
+      {session.learner?._id === currentUser._id && !session.helperConfirmed && (
+        <p>Waiting for helper confirmation...</p>
+      )}
 
-    <p>
-      Waiting for helper
-      confirmation...
-    </p>
-
-  )
-}
-
-{
-  session.helper?._id ===
-    currentUser._id &&
-  !session.learnerConfirmed && (
-
-    <p>
-      Waiting for learner
-      confirmation...
-    </p>
-
-  )
-}
+      {session.helper?._id === currentUser._id && !session.learnerConfirmed && (
+        <p>Waiting for learner confirmation...</p>
+      )}
 
       <p>
         Timer:
@@ -231,29 +316,12 @@ const SessionPage = () => {
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {
-  session.status ===
-    "active" &&
-
-  !(
-    session.learner?._id ===
-      currentUser._id
-        ? session
-            .learnerConfirmed
-        : session
-            .helperConfirmed
-  ) && (
-
-    <button
-      onClick={
-        confirmSession
-      }
-    >
-      Mark Session Done
-    </button>
-
-  )
-}
+      {session.status === "active" &&
+        !(session.learner?._id === currentUser._id
+          ? session.learnerConfirmed
+          : session.helperConfirmed) && (
+          <button onClick={confirmSession}>Mark Session Done</button>
+        )}
     </div>
   );
 };

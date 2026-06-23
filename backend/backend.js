@@ -12,6 +12,7 @@ dotenv.config();
 import {setIo,getOnlineUsers} from "./socket/socketManager.js";
 import notificationRoutes from "./routes/notification.routes.js";
 import sessionRoutes from "./routes/session.routes.js";
+import ratingRoutes from "./routes/rating.routes.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -37,6 +38,7 @@ app.use("/api/requests", requestRoutes);
 app.use("/api/ai",aiRoutes);
 app.use("/api/notifications",notificationRoutes);
 app.use("/api/sessions",sessionRoutes);
+app.use("/api/ratings",ratingRoutes);
 
 app.get("/", (req, res) => {
   res.send("SkillSwap API Running");

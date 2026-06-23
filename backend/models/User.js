@@ -37,6 +37,15 @@ const userSchema = new Schema(
       type: [String],
       default: [],
 },
+    rating: {
+      type: Number,
+      default: 0,
+    },
+
+    ratingCount: {
+      type: Number,
+      default: 0,
+    }
   },
   {
     timestamps: true,

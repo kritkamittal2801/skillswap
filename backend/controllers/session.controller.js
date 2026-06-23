@@ -2,62 +2,52 @@ import { Request } from "../models/Request.js";
 import { Session } from "../models/Session.js";
 import generateMeetLink from "../utils/generateMeetLink.js";
 import { getIo } from "../socket/socketManager.js";
-import {User} from "../models/User.js";
+import { User } from "../models/User.js";
 
-export const acceptRequest =
-async (req, res) => {
-
+export const acceptRequest = async (req, res) => {
   try {
-
-    const request =
-      await Request.findById(
-        req.params.id
-      );
+    const request = await Request.findById(req.params.id);
 
     if (!request) {
       return res.status(404).json({
         success: false,
-        message:
-          "Request not found",
+        message: "Request not found",
       });
     }
 
-    if (
-      request.status ===
-      "accepted"
-    ) {
+    if (request.status === "accepted") {
       return res.status(400).json({
         success: false,
-        message:
-          "Already accepted",
+        message: "Already accepted",
       });
     }
 
-    const meetLink =
-      generateMeetLink();
+    const learner = await User.findById(request.requester);
 
-      console.log("Request document:", request);
-console.log("request.coinAmount:", request.coinAmount);
-
-    const session =
-      await Session.create({
-
-        request:
-          request._id,
-
-        learner:
-          request.requester,
-
-        helper:
-          req.user._id,
-        coinAmount:request.mode === "paid"? request.coinAmount : 0,
-
-        meetLink,
-        
+    if (request.mode === "paid" && learner.coins < request.coinAmount) {
+      return res.status(400).json({
+        success: false,
+        message: "Learner does not have enough coins",
       });
+    }
 
-    request.status =
-      "accepted";
+    const meetLink = generateMeetLink();
+
+    console.log("Request document:", request);
+    console.log("request.coinAmount:", request.coinAmount);
+
+    const session = await Session.create({
+      request: request._id,
+
+      learner: request.requester,
+
+      helper: req.user._id,
+      coinAmount: request.mode === "paid" ? request.coinAmount : 0,
+
+      meetLink,
+    });
+
+    request.status = "accepted";
 
     await request.save();
 
@@ -65,216 +55,163 @@ console.log("request.coinAmount:", request.coinAmount);
       success: true,
       session,
     });
-
   } catch (error) {
-
     console.log("ACCEPT REQUEST ERROR:");
-  console.log(error);
+    console.log(error);
 
     res.status(500).json({
       success: false,
-      message:
-        error.message,
+      message: error.message,
     });
-
   }
 };
 
-export const getSession =
-async (req,res) => {
-
-  const session =
-    await Session.findById(
-      req.params.id
-    )
-    .populate(
-      "learner helper"
-    );
+export const getSession = async (req, res) => {
+  const session = await Session.findById(req.params.id)
+    .populate("learner helper")
+    .populate("request");
 
   res.json({
-    success:true,
-    session
+    success: true,
+    session,
   });
 };
 
-export const startSession =
-async (req, res) => {
-
+export const startSession = async (req, res) => {
   try {
-
-    const session =
-      await Session.findById(
-        req.params.id
-      ).populate("learner helper");
-
-    if (!session) {
-
-      return res.status(404).json({
-        success: false,
-        message:
-          "Session not found"
-      });
-
-    }
-
-    session.status =
-      "active";
-
-    await session.save();
-
- const io = getIo();
-
-    io.emit(
-  "sessionStarted",
-  {
-    sessionId:
-      session._id
-  }
-);
-
-    res.status(200).json({
-      success: true,
-      session
-    });
-
-  } catch (error) {
-
-    res.status(500).json({
-      success: false,
-      message:
-        error.message
-    });
-
-  }
-
-};
-
-export const completeSession=async(req,res)=>{
-    const session =
-  await Session.findById(
-    req.params.id
-  );
-
-  if (!session) {
-  return res.status(404).json({
-    success: false,
-    message:
-      "Session not found"
-  });
-}
-
-const learner =
-  await User.findById(
-    session.learner
-  );
-
-const helper =
-  await User.findById(
-    session.helper
-  );
-
-  if (
-  learner.coins <
-  session.coinAmount
-) {
-  return res.status(400).json({
-    success: false,
-    message:
-      "Not enough coins"
-  });
-}
-console.log(session);
-console.log("learner has coins:",learner.coins);
-console.log("helper has coins:",helper.coins);
-console.log("session coins are:",session.coinAmount);
-
-learner.coins-=
-  session.coinAmount;
-
-  helper.coins +=
-  session.coinAmount;
-
-  session.status =
-  "completed";
-
-  await learner.save();
-
-await helper.save();
-
-await session.save();
-
-res.status(200).json({
-  success: true,
-  message:
-    "Session completed"
-});
-}
-
-export const confirmSession =
-async (req, res) => {
-
-  try {
-
-    const session =
-      await Session.findById(
-        req.params.id
-      );
+    const session = await Session.findById(req.params.id).populate(
+      "learner helper",
+    );
 
     if (!session) {
       return res.status(404).json({
         success: false,
-        message:
-          "Session not found",
+        message: "Session not found",
       });
     }
 
-    if (
-      session.learner.toString()
-      === req.user._id
-    ) {
-
-      session.learnerConfirmed =
-        true;
-
-    }
-
-    if (
-      session.helper.toString()
-      === req.user._id
-    ) {
-
-      session.helperConfirmed =
-        true;
-
-    }
-
-    // BOTH confirmed
-
-    if (
-      session.learnerConfirmed &&
-      session.helperConfirmed
-    ) {
-
-      session.status =
-        "completed";
-
-    }
+    session.status = "active";
 
     await session.save();
+
+    const io = getIo();
+
+    io.emit("sessionStarted", {
+      sessionId: session._id,
+    });
 
     res.status(200).json({
       success: true,
       session,
     });
-
   } catch (error) {
-
     res.status(500).json({
       success: false,
-      message:
-        error.message,
+      message: error.message,
     });
+  }
+};
 
+export const completeSession = async (req, res) => {
+  const session = await Session.findById(req.params.id);
+
+  if (!session) {
+    return res.status(404).json({
+      success: false,
+      message: "Session not found",
+    });
   }
 
+  const learner = await User.findById(session.learner);
+
+  const helper = await User.findById(session.helper);
+
+  if (learner.coins < session.coinAmount) {
+    return res.status(400).json({
+      success: false,
+      message: "Not enough coins",
+    });
+  }
+  console.log(session);
+  console.log("learner has coins:", learner.coins);
+  console.log("helper has coins:", helper.coins);
+  console.log("session coins are:", session.coinAmount);
+
+  learner.coins -= session.coinAmount;
+
+  helper.coins += session.coinAmount;
+
+  session.status = "completed";
+
+  await learner.save();
+
+  await helper.save();
+
+  await session.save();
+
+  res.status(200).json({
+    success: true,
+    message: "Session completed",
+  });
+};
+
+export const confirmSession = async (req, res) => {
+  try {
+    const session = await Session.findById(req.params.id).populate("request");
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: "Session not found",
+      });
+    }
+
+    if (session.learner.toString() === req.user._id) {
+      session.learnerConfirmed = true;
+    }
+
+    if (session.helper.toString() === req.user._id) {
+      session.helperConfirmed = true;
+    }
+
+    // BOTH confirmed
+
+    if (session.learnerConfirmed && session.helperConfirmed) {
+      if (session.coinAmount > 0) {
+        const learner = await User.findById(session.learner);
+
+        const helper = await User.findById(session.helper);
+
+        learner.coins -= session.coinAmount;
+
+        helper.coins += session.coinAmount;
+
+        await learner.save();
+
+        await helper.save();
+      }
+
+      session.status = "completed";
+    }
+
+    await session.save();
+
+    const io = getIo();
+
+    const updatedSession = await Session.findById(session._id)
+      .populate("learner helper")
+      .populate("request");
+
+    io.emit("sessionUpdated", updatedSession);
+
+    res.status(200).json({
+      success: true,
+      session: updatedSession,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 };

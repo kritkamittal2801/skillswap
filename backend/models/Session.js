@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
-const sessionSchema =
-new mongoose.Schema(
+const sessionSchema = new mongoose.Schema(
   {
     request: {
       type: mongoose.Schema.Types.ObjectId,
@@ -26,37 +25,28 @@ new mongoose.Schema(
       required: true,
     },
     learnerConfirmed: {
-        type: Boolean,
-        default: false,
-        },
+      type: Boolean,
+      default: false,
+    },
 
     helperConfirmed: {
-        type: Boolean,
-        default: false,
-        },
+      type: Boolean,
+      default: false,
+    },
     coinAmount: {
-        type: Number,
-        required: true
-        },
+      type: Number,
+      required: true,
+    },
 
     status: {
       type: String,
-      enum: [
-        "scheduled",
-        "completed",
-        "cancelled",
-        "active"
-      ],
+      enum: ["scheduled", "completed", "cancelled", "active"],
       default: "scheduled",
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-export const Session =
-  mongoose.model(
-    "Session",
-    sessionSchema
-  );
+export const Session = mongoose.model("Session", sessionSchema);
