@@ -95,8 +95,6 @@ if (mode === "barter") {
   
 }
 
-
-
     res.status(201).json({
       success: true,
       request,
@@ -112,7 +110,7 @@ if (mode === "barter") {
 export const getAllRequests = async (req, res) => {
   try {
     const requests = await Request.find()
-    .populate("requester", "name email")
+    .populate("requester", "username email")
     .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -133,7 +131,7 @@ export const getRequestById = async (req, res) => {
       req.params.id
     ).populate(
       "requester",
-      "name email skills learningSkills rating"
+      "username email skillsOffered rating isOnline lastSeen"
     );
 
     if (!request) {

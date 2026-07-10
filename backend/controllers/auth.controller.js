@@ -6,7 +6,7 @@ const signup = async (req, res) => {
 
     try {
 
-        const { username, email, password } = req.body;
+        const { username, email, password , college , year } = req.body;
 
 
         // CHECK IF USER EXISTS
@@ -25,9 +25,13 @@ const signup = async (req, res) => {
         const user = await User.create({
             username,
             email,
-            password
+            password,
+            college,
+            year
         });
 
+        const userResponse = user.toObject();
+        delete userResponse.password;
 
         return res.status(201).json({
             message: "User created successfully",
@@ -75,6 +79,8 @@ const login = async (req, res) => {
         // GENERATE TOKEN
         const accessToken = user.generateAccessToken();
 
+        const userResponse = user.toObject();
+        delete userResponse.password;
 
         return res.status(200).json({
             message: "Login successful",

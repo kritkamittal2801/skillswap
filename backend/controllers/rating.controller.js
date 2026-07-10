@@ -92,3 +92,39 @@ async (req, res) => {
   });
 
 };
+
+export const getFeedbackHighlights = async (req, res) => {
+  try {
+    const ratings = await Rating.find({
+      review: { $exists: true, $ne: "" },
+      stars: { $gte: 4 },
+    })
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .populate("reviewee", "username")
+      .populate({
+        path: "session",
+        populate: { path: "request", select: "subject" },
+      });
+
+    const highlights = ratings
+      .filter((r) => r.session && r.session.request)
+      .slice(0, 6)
+      .map((r) => ({
+        quote: r.review,
+        stars: r.stars,
+        helperName: r.reviewee?.username || "a helper",
+        subject: r.session.request.subject,
+      }));
+
+    res.status(200).json({
+      success: true,
+      highlights,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

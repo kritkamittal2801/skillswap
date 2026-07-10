@@ -20,7 +20,7 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
     try {
 
-      const { skillsOffered } = req.body;
+       const { skillsOffered, college, year } = req.body;
 
       const user =
         await User.findById(
@@ -35,16 +35,16 @@ const updateProfile = async (req, res) => {
 
 
       // Generate hidden tags
-      const skillTags =
-        await expandSkills(
-          skillsOffered
-        );
+      
+      if (skillsOffered) {
+        const skillTags = await expandSkills(skillsOffered);
+        user.skillsOffered = skillsOffered;
+        user.skillTags = skillTags;
+      }
 
-      user.skillsOffered =
-        skillsOffered;
+      if (college) user.college = college;
+      if (year) user.year = year;
 
-      user.skillTags =
-        skillTags;
 
       await user.save();
 
@@ -55,7 +55,7 @@ const updateProfile = async (req, res) => {
       });
 
     } catch (error) {
-        console.error("PROFILE UPDATE ERROR:");
+        console.error("PROFILE UPDATE ERROR:",error);
       res.status(500).json({
         success: false,
         message: error.message,

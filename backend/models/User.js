@@ -20,6 +20,18 @@ const userSchema = new Schema(
       trim: true,
     },
 
+    college: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    year: {
+      type: String, 
+      required: true,
+      trim: true,
+    },
+
     password: {
       type: String,
       required: true,
@@ -36,7 +48,7 @@ const userSchema = new Schema(
     skillTags: {
       type: [String],
       default: [],
-},
+    },
     rating: {
       type: Number,
       default: 0,
@@ -45,7 +57,16 @@ const userSchema = new Schema(
     ratingCount: {
       type: Number,
       default: 0,
-    }
+    },
+
+    isOnline: {
+      type: Boolean,
+      default: false,
+    },
+
+    lastSeen: {
+      type: Date,
+    },
   },
   {
     timestamps: true,

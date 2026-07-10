@@ -18,10 +18,7 @@ const verifyJWT = async (req, res, next) => {
         ""
       );
 
-    console.log(
-      "Extracted Token:",
-      token
-    );
+    
 
     if (!token) {
       return res.status(401).json({
@@ -36,10 +33,7 @@ const verifyJWT = async (req, res, next) => {
         process.env.ACCESS_TOKEN_SECRET
       );
 
-    console.log(
-      "Decoded Token:",
-      decodedToken
-    );
+    
 
     req.user = decodedToken;
 

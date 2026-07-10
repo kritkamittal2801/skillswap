@@ -19,17 +19,16 @@ export const emitNotification = (
   notification
 ) => {
 
-    
-
   const socketId =
     onlineUsers[userId];
 
-    
-
   if (socketId && io) {
+
     io.to(socketId).emit(
       "newNotification",
       notification
     );
+
   }
+
 };

@@ -118,6 +118,7 @@ export const getDashboard = async (req, res) => {
 
   return res.json({
     success: true,
+    username:user.username,
 
     stats: {
       coins: user.coins,
