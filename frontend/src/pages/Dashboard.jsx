@@ -271,7 +271,7 @@ const Dashboard = () => {
           <Card className="lg:col-span-2 p-0 overflow-hidden" style={{ boxShadow: CARD_SHADOW }}>
             <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
               <span className="text-xs font-mono uppercase tracking-wider" style={{ color: TEXT_MUTED }}>Recent sessions</span>
-              <Link to="/requests" className="text-xs flex items-center gap-1" style={{ color: COLORS.blue }}>
+              <Link to="/sessions" className="text-xs flex items-center gap-1" style={{ color: COLORS.blue }}>
                 View all <ArrowRight className="w-3 h-3" />
               </Link>
             </div>
@@ -288,7 +288,7 @@ const Dashboard = () => {
                   const roleColor = wasHelper ? COLORS.green : COLORS.blue;
 
                   return (
-                    <div key={session._id} className="px-6 py-4">
+                    <Link key={session._id} to={`/sessions/${session._id}`} className="block px-6 py-4 hover:bg-white/[0.02] transition-colors">
                       <div className="flex items-center justify-between gap-3 mb-1.5">
                         <span className="text-sm font-medium">{session.request?.subject || "Untitled session"}</span>
                         <span className="text-xs font-mono px-2 py-0.5 rounded-full shrink-0" style={{ color: status.color, background: `${status.color}1A` }}>
@@ -308,7 +308,7 @@ const Dashboard = () => {
                         <span>·</span>
                         <span>{timeAgo(session.createdAt)}</span>
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>

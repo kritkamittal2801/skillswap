@@ -8,9 +8,17 @@ import { getSession } from "../controllers/session.controller.js";
 import { startSession } from "../controllers/session.controller.js";
 import { completeSession } from "../controllers/session.controller.js";
 import { confirmSession } from "../controllers/session.controller.js";
+import { joinSession } from "../controllers/session.controller.js";
+import { getMySessions } from "../controllers/session.controller.js";
 
 const router =
   express.Router();
+
+router.get(
+  "/",
+  verifyJWT,
+  getMySessions
+);
 
 router.post(
   "/accept/:id",
@@ -37,4 +45,8 @@ router.put(
 );
 
 router.put("/:id/confirm",verifyJWT,confirmSession);
+
+// New primary action behind the "Join meeting" button.
+router.put("/join/:id", verifyJWT, joinSession);
+
 export default router;

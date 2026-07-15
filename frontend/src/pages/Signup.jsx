@@ -190,7 +190,7 @@ const Signup = () => {
               {success && <p className="text-sm" style={{ color: COLORS.green }}>{success}</p>}
 
               <ButtonPrimary type="submit" className="w-full justify-center py-4 text-base" disabled={loading}>
-                {loading ? "Creating account..." : "Sign up free"}
+                {loading ? "Creating account..." : "Sign up "}
               </ButtonPrimary>
             </form>
 

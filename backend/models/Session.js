@@ -24,15 +24,32 @@ const sessionSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+
+    
     learnerConfirmed: {
       type: Boolean,
       default: false,
     },
-
     helperConfirmed: {
       type: Boolean,
       default: false,
     },
+
+    
+    learnerJoined: {
+      type: Boolean,
+      default: false,
+    },
+    helperJoined: {
+      type: Boolean,
+      default: false,
+    },
+
+   
+    startedAt: {
+      type: Date,
+    },
+
     coinAmount: {
       type: Number,
       required: true,

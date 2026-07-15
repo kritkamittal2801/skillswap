@@ -33,8 +33,6 @@ const updateProfile = async (req, res) => {
         });
       }
 
-
-      // Generate hidden tags
       
       if (skillsOffered) {
         const skillTags = await expandSkills(skillsOffered);

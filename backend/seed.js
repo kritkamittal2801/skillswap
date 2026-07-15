@@ -1,16 +1,3 @@
-/**
- * seed.js — run ONCE after migrate.js, from inside your backend/ folder:
- *
- *   node seed.js
- *
- * What it does: adds NEW users, requests, completed sessions, and ratings
- * (with written feedback text) on top of whatever's already in your
- * database. It does NOT delete anything.
- *
- * After running, update each seeded helper's rating/ratingCount to match
- * the ratings just created — same aggregation logic your own
- * createRating controller already uses, so numbers stay consistent.
- */
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -38,6 +25,7 @@ const SUBJECTS = [
   { subject: "React.js", topics: ["Hooks", "Context API"] },
   { subject: "Machine Learning", topics: ["Gradient Descent", "Overfitting"] },
   { subject: "Linear Algebra", topics: ["Eigenvalues", "Matrix transforms"] },
+  
 ];
 
 const FEEDBACK_QUOTES = [

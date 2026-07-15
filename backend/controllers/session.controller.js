@@ -1,8 +1,11 @@
 import { Request } from "../models/Request.js";
 import { Session } from "../models/Session.js";
 import generateMeetLink from "../utils/generateMeetLink.js";
-import { getIo } from "../socket/socketManager.js";
+import { getIo, emitNotification } from "../socket/socketManager.js";
 import { User } from "../models/User.js";
+import { Notification } from "../models/Notification.js";
+
+const MIN_SESSION_SECONDS = 5 * 60;
 
 export const acceptRequest = async (req, res) => {
   try {
@@ -33,9 +36,6 @@ export const acceptRequest = async (req, res) => {
 
     const meetLink = generateMeetLink();
 
-    console.log("Request document:", request);
-    console.log("request.coinAmount:", request.coinAmount);
-
     const session = await Session.create({
       request: request._id,
 
@@ -50,6 +50,17 @@ export const acceptRequest = async (req, res) => {
     request.status = "accepted";
 
     await request.save();
+
+    const acceptMessage = `${req.user.username} accepted your ${request.subject} request`;
+
+    const notification = await Notification.create({
+      recipient: request.requester,
+      message: acceptMessage,
+      type: "accepted",
+      relatedSession: session._id,
+    });
+
+    emitNotification(request.requester.toString(), notification);
 
     res.status(201).json({
       success: true,
@@ -74,6 +85,7 @@ export const getSession = async (req, res) => {
   res.json({
     success: true,
     session,
+    minSessionSeconds: MIN_SESSION_SECONDS,
   });
 };
 
@@ -91,6 +103,7 @@ export const startSession = async (req, res) => {
     }
 
     session.status = "active";
+    session.startedAt = new Date();
 
     await session.save();
 
@@ -98,6 +111,7 @@ export const startSession = async (req, res) => {
 
     io.emit("sessionStarted", {
       sessionId: session._id,
+      startedAt: session.startedAt,
     });
 
     res.status(200).json({
@@ -132,10 +146,6 @@ export const completeSession = async (req, res) => {
       message: "Not enough coins",
     });
   }
-  console.log(session);
-  console.log("learner has coins:", learner.coins);
-  console.log("helper has coins:", helper.coins);
-  console.log("session coins are:", session.coinAmount);
 
   learner.coins -= session.coinAmount;
 
@@ -174,8 +184,6 @@ export const confirmSession = async (req, res) => {
       session.helperConfirmed = true;
     }
 
-    // BOTH confirmed
-
     if (session.learnerConfirmed && session.helperConfirmed) {
       if (session.coinAmount > 0) {
         const learner = await User.findById(session.learner);
@@ -207,6 +215,98 @@ export const confirmSession = async (req, res) => {
     res.status(200).json({
       success: true,
       session: updatedSession,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+export const joinSession = async (req, res) => {
+  try {
+    const session = await Session.findById(req.params.id)
+      .populate("learner helper")
+      .populate("request");
+
+    if (!session) {
+      return res.status(404).json({
+        success: false,
+        message: "Session not found",
+      });
+    }
+
+    if (session.learner._id.toString() === req.user._id) {
+      session.learnerJoined = true;
+    }
+
+    if (session.helper._id.toString() === req.user._id) {
+      session.helperJoined = true;
+    }
+
+    const bothJoined = session.learnerJoined && session.helperJoined;
+    const elapsedMs = session.startedAt
+      ? Date.now() - new Date(session.startedAt).getTime()
+      : 0;
+    const minimumElapsed = elapsedMs >= MIN_SESSION_SECONDS * 1000;
+
+    if (bothJoined && minimumElapsed && session.status !== "completed") {
+      if (session.coinAmount > 0) {
+        const learner = await User.findById(session.learner._id);
+        const helper = await User.findById(session.helper._id);
+
+        learner.coins -= session.coinAmount;
+        helper.coins += session.coinAmount;
+
+        await learner.save();
+        await helper.save();
+      }
+
+      session.status = "completed";
+    }
+
+    await session.save();
+
+    const io = getIo();
+
+    const updatedSession = await Session.findById(session._id)
+      .populate("learner helper")
+      .populate("request");
+
+    io.emit("sessionUpdated", updatedSession);
+
+    res.status(200).json({
+      success: true,
+      session: updatedSession,
+      bothJoined,
+      minimumElapsed,
+      secondsRemaining: minimumElapsed
+        ? 0
+        : Math.max(0, MIN_SESSION_SECONDS - Math.floor(elapsedMs / 1000)),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
+export const getMySessions = async (req, res) => {
+  try {
+    const sessions = await Session.find({
+      $or: [{ learner: req.user._id }, { helper: req.user._id }],
+    })
+      .populate("learner helper", "username")
+      .populate("request")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      sessions,
     });
   } catch (error) {
     res.status(500).json({

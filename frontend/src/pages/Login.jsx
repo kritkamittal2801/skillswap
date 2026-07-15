@@ -6,9 +6,13 @@ import api from "../services/api";
 import { COLORS, TEXT_MUTED, CARD_SHADOW, CARD_SHADOW_LG } from "../theme/theme";
 import { Logo } from "../theme/Logo";
 import { Card, Input, ButtonPrimary } from "../theme/ui";
+import { useLocation} from "react-router-dom";
 
 const Login = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+const navigate = useNavigate();
+const from = location.state?.from || "/dashboard";
+  
   const { login } = useContext(AuthContext);
 
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -24,7 +28,7 @@ const Login = () => {
     try {
       const response = await api.post("/auth/login", formData);
       login(response.data.accessToken, response.data.user);
-      navigate("/dashboard");
+      navigate(from);
     } catch (err) {
       console.log(err);
       setError(err.response?.data?.message || "Something went wrong. Try again.");
@@ -60,16 +64,6 @@ const Login = () => {
             Log back in and see who's online right now. Your next doubt — or your next student to help — is probably a few minutes away.
           </p>
 
-          <div className="mt-12 flex items-center gap-12">
-            <div>
-              <div className="font-display font-medium text-4xl" style={{ color: COLORS.red }}>10,000+</div>
-              <div className="text-sm text-white/35 mt-1">active students</div>
-            </div>
-            <div>
-              <div className="font-display font-medium text-4xl" style={{ color: COLORS.gold }}>4.9/5</div>
-              <div className="text-sm text-white/35 mt-1">average rating</div>
-            </div>
-          </div>
         </div>
 
         <div

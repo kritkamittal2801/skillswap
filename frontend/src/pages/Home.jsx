@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate,useLocation } from "react-router-dom";
 import {
   ArrowRight, Star, Users, Clock, BookOpen,
   Video, MessageSquare, Zap, ShieldCheck, Radio, ChevronRight,
@@ -6,43 +7,6 @@ import {
 } from "lucide-react";
 
 import api from "../services/api";
-
-/**
- * SkillSwap — Homepage (v2)
- * -----------------------------------------------------------------------
- * Design concept: "The last lamp still on."
- * A peer-to-peer doubt-clearing app lives in one specific moment: 1AM,
- * exam tomorrow, one lamp still glowing in an otherwise dark room.
- *
- * v2 changes from the first pass, on request — the first version read as
- * generic "AI SaaS": a violet↔amber gradient smeared across text and
- * buttons, and a rounded-gradient-square logo with a letter in it. Both
- * are default moves, not choices. Fixed here:
- *   - ONE accent color (a muted brass/gold), used sparingly — never as a
- *     gradient, never on body text, only on the one or two things per
- *     section that are actually "live" or actionable.
- *   - Display type swapped from Space Grotesk (very common AI pick) to
- *     Fraunces, a soft high-contrast serif — reads editorial/premium
- *     rather than "generic dev tool."
- *   - Logo is a custom engraved medallion mark (nods to the SkillPoints
- *     coin economy) with a hand-set monogram, not an icon-in-a-gradient-box.
- *
- * Fonts (add to index.html <head>):
- *   <link rel="preconnect" href="https://fonts.googleapis.com">
- *   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
- *
- * Dependency: npm i lucide-react
- * -----------------------------------------------------------------------
- */
-
-const liveFeed = [
-  { name: "Rhea", subject: "DBMS — Normalization", time: "just now", status: "matched" },
-  { name: "Aman", subject: "Thermodynamics — 2nd Law", time: "1 min ago", status: "live" },
-  { name: "Kavya", subject: "OOP — Polymorphism", time: "3 min ago", status: "solved" },
-  { name: "Dev", subject: "Networks — TCP handshake", time: "6 min ago", status: "matched" },
-  { name: "Ishaan", subject: "Circuits — Thevenin's theorem", time: "8 min ago", status: "solved" },
-  { name: "Priya", subject: "Calculus — Laplace transforms", time: "11 min ago", status: "live" },
-];
 
 const steps = [
   { n: "01", title: "Post your doubt", body: "Say what's stuck and tag the topic. Takes ten seconds — no forms, no waiting for office hours." },
@@ -59,15 +23,6 @@ const subjectCategories = [
 ];
 
 
-
-const leaderboard = [
-  { name: "Ananya Rao", subject: "Data Structures & Algorithms", sessions: 34, points: 890 },
-  { name: "Rohan Sharma", subject: "Database Systems", sessions: 29, points: 760 },
-  { name: "Ishaan Verma", subject: "Circuit Theory", sessions: 27, points: 705 },
-  { name: "Meera Iyer", subject: "Operating Systems", sessions: 22, points: 610 },
-  { name: "Karan Mehta", subject: "React & Frontend", sessions: 19, points: 540 },
-];
-
 const faqs = [
   { q: "Is SkillSwap actually free?", a: "Yes. It's a barter, not a marketplace — you help with what you know, and get help back on what you don't. No payments, no subscriptions." },
   { q: "How do you know people are real students?", a: "Sign-up requires a verified college email address, and every profile shows a real name, college, and year — no anonymous accounts." },
@@ -76,12 +31,11 @@ const faqs = [
   { q: "What stops someone from giving bad help?", a: "Ratings are mandatory on both sides after every session. Consistently low-rated accounts lose matching priority automatically." },
 ];
 
-/** Multi-color system: each color carries meaning, not just decoration. */
 const COLORS = {
-  red: "#C2504E",   // urgent / live / primary action
-  blue: "#7B8FC2",  // matched / in-progress / informational
-  green: "#6FA88A", // solved / success
-  gold: "#D9A441",  // points / rewards / ratings
+  red: "#C2504E",   
+  blue: "#7B8FC2",   
+  green: "#6FA88A", 
+  gold: "#D9A441",  
 };
 
 function StatusDot({ status }) {
@@ -93,10 +47,17 @@ function StatusDot({ status }) {
   return <span className={`inline-block w-2 h-2 rounded-full ${map[status]}`} />;
 }
 
-/**
- * Logo mark — the shared flame: one candle lighting another,
- * split into two interlocked halves. This is the final logo.
- */
+
+function goToProtected(navigate, path) {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    navigate("/login");
+  } else {
+    navigate(path);
+  }
+}
+
+
 function Mark({ size = 32 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
@@ -107,12 +68,35 @@ function Mark({ size = 32 }) {
 }
 
 export default function SkillSwapHome() {
-  const [tick, setTick] = useState(0);
+  const navigate = useNavigate();
+   const location = useLocation();
   const [openFaq, setOpenFaq] = useState(0);
 
-   const [highlights, setHighlights] = useState([]);
+  const goTo = (path, requiresAuth = false) => {
+  const token = localStorage.getItem("token");
+  if (requiresAuth && !token) {
+    navigate("/login", { state: { from: path } });
+  } else {
+    navigate(path);
+  }
+};
 
-  useEffect(() => {
+   const [highlights, setHighlights] = useState([]);
+   const [stats, setStats] = useState(null);
+  const [topHelpers, setTopHelpers] = useState([]);
+
+  const [liveFeedData, setLiveFeedData] = useState([]);
+
+useEffect(() => {
+  api.get("/stats/recent-activity").then((res) => setLiveFeedData(res.data.feed)).catch(console.log);
+}, []);
+
+useEffect(() => {
+  api.get("/stats/homepage").then((res) => setStats(res.data)).catch(console.log);
+  api.get("/stats/top-helpers").then((res) => setTopHelpers(res.data.helpers)).catch(console.log);
+}, []);
+
+   useEffect(() => {
     const fetchHighlights = async () => {
       try {
         const res = await api.get("/ratings/highlights");
@@ -125,14 +109,15 @@ export default function SkillSwapHome() {
   }, []);
 
   useEffect(() => {
-    const id = setInterval(() => setTick((t) => (t + 1) % liveFeed.length), 3200);
-    return () => clearInterval(id);
-  }, []);
+    if (location.hash) {
+      const el = document.getElementById(location.hash.substring(1));
+      if (el) {
+        setTimeout(() => el.scrollIntoView({ behavior: "smooth" }), 100);
+      }
+    }
+  }, [location]);
 
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => (t + 1) % liveFeed.length), 3200);
-    return () => clearInterval(id);
-  }, []);
+  
 
   return (
     <div className="min-h-screen bg-[#0C0808] text-[#ECE8E1] antialiased" style={{ fontFamily: "Inter, sans-serif" }}>
@@ -164,7 +149,7 @@ export default function SkillSwapHome() {
       `}</style>
 
       {/* ---------------------------------------------------------------- NAV */}
-      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#0C0808]/85 backdrop-blur-md">
+      <header className="border-b border-white/[0.06] bg-[#0C0808]/85 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 h-16 flex items-center justify-between">
           <a href="#" className="flex items-center gap-2.5">
             <Mark size={30} />
@@ -174,12 +159,12 @@ export default function SkillSwapHome() {
             <a href="#how" className="hover:text-white transition-colors">How it works</a>
             <a href="#subjects" className="hover:text-white transition-colors">Subjects</a>
             <a href="#stories" className="hover:text-white transition-colors">Stories</a>
-            <a href="#" className="hover:text-white transition-colors">About</a>
+            <a  href="#features" className="hover:text-white transition-colors">About</a>
           </nav>
           <div className="flex items-center gap-3">
-            <button className="hidden sm:inline-block text-sm text-white/60 hover:text-white transition-colors px-3 py-2">Log in</button>
-            <button className="text-sm font-medium bg-[#C2504E] text-[#0C0808] px-4 py-2 rounded-lg hover:bg-[#D4726F] transition-colors">
-              Sign up free
+            <button  onClick={() => navigate("/login")} className="hidden sm:inline-block text-sm text-white/60 hover:text-white transition-colors px-3 py-2">Log in</button>
+            <button  onClick={() => navigate("/signup")} className="text-sm font-medium bg-[#C2504E] text-[#0C0808] px-4 py-2 rounded-lg hover:bg-[#D4726F] transition-colors">
+              Sign up for free
             </button>
           </div>
         </div>
@@ -197,7 +182,7 @@ export default function SkillSwapHome() {
             </div>
             <div className="inline-flex items-center gap-2 text-xs font-mono text-[#C2504E]/90 border border-[#C2504E]/20 bg-[#C2504E]/[0.05] rounded-full px-3 py-1.5 mb-7">
               <StatusDot status="live" />
-              156 students online right now
+              {stats ? `${stats.activeStudents} students active right now` : "Loading..."}
             </div>
             <h1 className="font-display font-medium text-[2.75rem] leading-[1.08] sm:text-6xl sm:leading-[1.06] tracking-tight">
               Stuck at 1AM,
@@ -222,13 +207,13 @@ export default function SkillSwapHome() {
               ))}
             </div>
             <div className="mt-9 flex flex-wrap items-center gap-4">
-              <button className="group inline-flex items-center gap-2 bg-[#C2504E] text-white font-medium px-6 py-3.5 rounded-xl shadow-[0_8px_24px_rgba(194,80,78,0.35)] hover:bg-[#D4726F] transition-colors">
+              <button onClick={() =>  goTo("/requests/create", true)} className="group inline-flex items-center gap-2 bg-[#C2504E] text-white font-medium px-6 py-3.5 rounded-xl shadow-[0_8px_24px_rgba(194,80,78,0.35)] hover:bg-[#D4726F] transition-colors">
                 Post your first doubt
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </button>
-              <button className="inline-flex items-center gap-2 text-[#AAB8E0] hover:text-white border border-[#7B8FC2]/40 hover:border-[#7B8FC2]/70 px-6 py-3.5 rounded-xl transition-colors">
-                See how it works
-              </button>
+              <button onClick={() => navigate("/#how")} className="inline-flex items-center gap-2 text-[#AAB8E0] hover:text-white border border-[#7B8FC2]/40 hover:border-[#7B8FC2]/70 px-6 py-3.5 rounded-xl transition-colors">
+  See how it works
+</button>
             </div>
             <div className="mt-10 flex items-center gap-4">
               <div className="flex -space-x-2.5">
@@ -237,8 +222,8 @@ export default function SkillSwapHome() {
                 ))}
               </div>
               <div className="text-sm text-white/45">
-                <span className="text-white font-medium">4.9/5</span> from 2,000+ session ratings
-              </div>
+            <span className="text-white font-medium">{stats ? `${stats.averageRating}/5` : "—"}</span> from {stats ? stats.totalRatings : "0"}+ session ratings
+          </div>
             </div>
           </div>
 
@@ -299,12 +284,12 @@ export default function SkillSwapHome() {
       {/* ---------------------------------------------------------------- STATS STRIP */}
       <section className="border-y border-white/[0.06] bg-white/[0.012]">
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-8 grid grid-cols-2 sm:grid-cols-4 gap-8">
-          {[
-            [Users, "10,000+", "active students", COLORS.red],
-            [Clock, "2 min", "average match time", COLORS.blue],
-            [BookOpen, "300+", "topics covered", COLORS.green],
-            [Star, "4.9/5", "average rating", COLORS.gold],
-          ].map(([Icon, n, l, color], i) => (
+          {stats && [
+        [Users, `${stats.activeStudents}+`, "active students", COLORS.red],
+        [Radio, `${stats.onlineNow}`, "online right now", COLORS.blue],
+        [BookOpen, `${stats.topicsCovered}+`, "topics covered", COLORS.green],
+        [Star, `${stats.averageRating}/5`, "average rating", COLORS.gold],
+].map(([Icon, n, l, color], i) => (
             <div key={i} className="flex items-center gap-3">
               <Icon className="w-5 h-5 shrink-0" style={{ color }} />
               <div>
@@ -317,7 +302,7 @@ export default function SkillSwapHome() {
       </section>
 
       {/* ---------------------------------------------------------------- FEATURES */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-10 py-24 lg:py-28">
+      <section id ="features" className="max-w-7xl mx-auto px-6 lg:px-10 py-24 lg:py-28">
         <div className="max-w-xl mb-14">
           <div className="text-xs font-mono text-[#C2504E]/70 uppercase tracking-wider mb-3">What it does</div>
           <h2 className="font-display font-medium text-3xl sm:text-4xl tracking-tight">
@@ -353,7 +338,7 @@ export default function SkillSwapHome() {
         </div>
         <div className="flex overflow-hidden">
           <div className="flex gap-4 marquee-track shrink-0 pl-6">
-            {[...liveFeed, ...liveFeed].map((item, i) => (
+            {[...liveFeedData, ...liveFeedData].map((item, i) => (
               <div key={i} className="flex items-center gap-3 shrink-0 rounded-full border border-white/10 bg-white/[0.025] pl-2 pr-4 py-2">
                 <div className="w-7 h-7 rounded-full border border-[#C2504E]/35 flex items-center justify-center font-display italic text-xs font-medium text-[#C2504E]">
                   {item.name[0]}
@@ -380,26 +365,28 @@ export default function SkillSwapHome() {
           <p className="text-sm text-white/40 max-w-xs">Ranked by SkillPoints earned from sessions rated 4★ and above this week.</p>
         </div>
         <div className="rounded-xl bg-[#221414] shadow-[0_2px_6px_rgba(0,0,0,0.5),0_16px_36px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)] divide-y divide-white/[0.06]">
-          {leaderboard.map((p, i) => {
-            const medal = [COLORS.gold, "#B8B8B8", "#C97B4A", "transparent", "transparent"][i];
-            return (
-              <div key={p.name} className="flex items-center gap-4 px-6 py-4">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center font-display font-semibold text-sm shrink-0"
-                  style={{ background: i < 3 ? medal : "transparent", color: i < 3 ? "#150C0C" : "rgba(255,255,255,0.3)" }}>
-                  {i + 1}
-                </div>
-                <div className="w-9 h-9 rounded-full border border-[#C2504E]/35 flex items-center justify-center font-display italic text-sm text-[#C2504E] shrink-0">
-                  {p.name[0]}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm font-medium truncate">{p.name}</div>
-                  <div className="text-xs text-white/35 truncate">{p.subject}</div>
-                </div>
-                <div className="hidden sm:block text-xs text-white/35 font-mono">{p.sessions} sessions</div>
-                <div className="text-sm font-display font-medium w-16 text-right" style={{ color: COLORS.gold }}>{p.points} pts</div>
-              </div>
-            );
-          })}
+          
+
+            {topHelpers.map((p, i) => {
+  const medal = [COLORS.gold, "#B8B8B8", "#C97B4A", "transparent", "transparent"][i];
+  return (
+    <div key={p._id} className="flex items-center gap-4 px-6 py-4">
+      <div className="w-8 h-8 rounded-full flex items-center justify-center font-display font-semibold text-sm shrink-0"
+        style={{ background: i < 3 ? medal : "transparent", color: i < 3 ? "#150C0C" : "rgba(255,255,255,0.3)" }}>
+        {i + 1}
+      </div>
+      <div className="w-9 h-9 rounded-full border border-[#C2504E]/35 flex items-center justify-center font-display italic text-sm text-[#C2504E] shrink-0">
+        {p.username[0].toUpperCase()}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium truncate">{p.username}</div>
+        <div className="text-xs text-white/35 truncate">{p.skillsOffered.join(", ")}</div>
+      </div>
+      <div className="text-sm font-display font-medium w-16 text-right" style={{ color: COLORS.gold }}>{p.rating.toFixed(1)}★</div>
+    </div>
+  );
+})}
+
         </div>
       </section>
 
@@ -426,7 +413,7 @@ export default function SkillSwapHome() {
       </section>
 
       {/* ---------------------------------------------------------------- COMPARISON */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-10 pb-24 lg:pb-28">
+      <section id="compare" className="max-w-7xl mx-auto px-6 lg:px-10 pb-24 lg:pb-28">
         <div className="grid md:grid-cols-2 gap-5">
           <div className="rounded-xl bg-[#221414] p-8 shadow-[0_2px_6px_rgba(0,0,0,0.5),0_16px_36px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)]">
             <div className="text-xs font-mono text-white/30 uppercase tracking-wider mb-6">Office hours / forums</div>
@@ -458,7 +445,7 @@ export default function SkillSwapHome() {
             <div className="text-xs font-mono text-[#C2504E]/70 uppercase tracking-wider mb-3">Popular right now</div>
             <h2 className="font-display font-medium text-3xl tracking-tight">What people are stuck on</h2>
           </div>
-          <a href="#" className="text-sm text-white/45 hover:text-white flex items-center gap-1 transition-colors">
+          <a onClick={() => goTo("/requests", true)} className="text-sm text-white/45 hover:text-white flex items-center gap-1 transition-colors">
             Browse all subjects <ChevronRight className="w-4 h-4" />
           </a>
         </div>
@@ -538,7 +525,7 @@ export default function SkillSwapHome() {
         </div>
       </section>
 
-      {/* ---------------------------------------------------------------- CTA */}
+      
       <section className="max-w-7xl mx-auto px-6 lg:px-10 pb-24">
         <div className="relative overflow-hidden rounded-2xl border border-white/10 px-8 py-16 sm:px-16 text-center">
           <div className="absolute inset-0 lamp-glow" />
@@ -550,10 +537,10 @@ export default function SkillSwapHome() {
               Post your doubt and find out. It takes less time than scrolling for an answer that isn't quite right.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <button className="inline-flex items-center gap-2 bg-[#C2504E] text-[#0C0808] font-medium px-6 py-3.5 rounded-xl hover:bg-[#D4726F] transition-colors">
+              <button  onClick={() => goTo("/requests/create", true)} className="inline-flex items-center gap-2 bg-[#C2504E] text-[#0C0808] font-medium px-6 py-3.5 rounded-xl hover:bg-[#D4726F] transition-colors">
                 Post your first doubt <ArrowRight className="w-4 h-4" />
               </button>
-              <button className="inline-flex items-center gap-2 text-[#AAB8E0] hover:text-white border border-[#7B8FC2]/40 hover:border-[#7B8FC2]/70 px-6 py-3.5 rounded-xl transition-colors">
+              <button onClick={() => goTo("/requests", true)} className="inline-flex items-center gap-2 text-[#AAB8E0] hover:text-white border border-[#7B8FC2]/40 hover:border-[#7B8FC2]/70 px-6 py-3.5 rounded-xl transition-colors">
                 Browse open requests
               </button>
             </div>
@@ -563,7 +550,7 @@ export default function SkillSwapHome() {
 
       {/* ---------------------------------------------------------------- FOOTER */}
       <footer className="border-t border-white/[0.06]">
-        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16 grid sm:grid-cols-2 lg:grid-cols-5 gap-10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-10 py-16 grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2.5 mb-4">
               <Mark size={26} />
@@ -573,34 +560,42 @@ export default function SkillSwapHome() {
               Peer-to-peer doubt clearing for college students. Learn from someone who gets it, teach someone who needs it.
             </p>
             <div className="flex gap-4 mt-6 text-white/30">
-              {/* <Twitter className="w-4 h-4 hover:text-white/60 transition-colors cursor-pointer" />
-              <Instagram className="w-4 h-4 hover:text-white/60 transition-colors cursor-pointer" />
-              <Linkedin className="w-4 h-4 hover:text-white/60 transition-colors cursor-pointer" />
-              <Github className="w-4 h-4 hover:text-white/60 transition-colors cursor-pointer" /> */}
               
             </div>
           </div>
-          {[
-            ["Product", ["Browse requests", "How it works", "Subjects", "Dashboard"]],
-            ["Resources", ["Help center", "Community guidelines", "Blog"]],
-            ["Company", ["About", "Contact", "Privacy policy"]],
-          ].map(([title, links]) => (
-            <div key={title}>
-              <div className="text-sm font-medium mb-4">{title}</div>
-              <ul className="space-y-3">
-                {links.map((l) => (
-                  <li key={l}><a href="#" className="text-sm text-white/35 hover:text-white/65 transition-colors">{l}</a></li>
-                ))}
-              </ul>
-            </div>
-          ))}
+    
+
+      {[
+  ["Product", [
+    { label: "Browse requests", path: "/requests", protected: true },
+    { label: "How it works", path: "/#how", protected: false },
+    { label: "Subjects", path: "/#subjects", protected: false },
+    { label: "Dashboard", path: "/dashboard", protected: true },
+  ]],
+  ["Company", [
+    { label: "About", path: "/#features", protected: false },
+    { label: "Contact", path: "mailto:kritikamittal54@gmail.com", protected: false },
+  ]],
+].map(([title, links]) => (
+  <div key={title}>
+    <div className="text-sm font-medium mb-4">{title}</div>
+    <ul className="space-y-3">
+      {links.map((link) => (
+        <li key={link.label}>
+          {link.path.startsWith("mailto:") ? (
+            <a href={link.path} className="text-sm text-white/35 hover:text-white/65 transition-colors">{link.label}</a>
+          ) : (
+            <a onClick={() => goTo(link.path, link.protected)} className="text-sm text-white/35 hover:text-white/65 transition-colors cursor-pointer">{link.label}</a>
+          )}
+        </li>
+      ))}
+    </ul>
+  </div>
+))}
+
         </div>
         <div className="max-w-7xl mx-auto px-6 lg:px-10 py-6 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-white/25">
           <span>© 2026 SkillSwap. Built by students, for students.</span>
-          <div className="flex items-center gap-2">
-            <input type="email" placeholder="you@college.edu" className="bg-white/[0.025] border border-white/10 rounded-lg px-3 py-2 text-xs text-white/60 placeholder:text-white/20 focus:outline-none focus:border-white/25 w-44" />
-            <button className="bg-white/[0.06] hover:bg-white/10 transition-colors rounded-lg p-2"><Send className="w-3.5 h-3.5" /></button>
-          </div>
         </div>
       </footer>
     </div>

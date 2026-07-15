@@ -2,7 +2,7 @@ import { Bell } from "lucide-react";
 import { TEXT_MUTED, CARD_SHADOW } from "../theme/theme";
 import NotificationCard from "./NotificationCard";
 
-const NotificationPanel = ({ notifications }) => {
+const NotificationPanel = ({ notifications, onNotificationClick }) => {
   return (
     <div
       className="absolute top-12 right-0 w-80 rounded-xl overflow-hidden"
@@ -21,9 +21,13 @@ const NotificationPanel = ({ notifications }) => {
           <p className="text-sm" style={{ color: TEXT_MUTED }}>No notifications yet.</p>
         </div>
       ) : (
-        <div className="max-h-80 overflow-y-auto">
+        <div className="max-h-96 overflow-y-auto">
           {notifications.map((notification) => (
-            <NotificationCard key={notification._id} notification={notification} />
+            <NotificationCard
+              key={notification._id}
+              notification={notification}
+              onClick={onNotificationClick}
+            />
           ))}
         </div>
       )}

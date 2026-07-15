@@ -6,8 +6,6 @@ import { COLORS, TEXT_MUTED, CARD_SHADOW, CARD_SHADOW_LG } from "../theme/theme"
 import { Logo } from "../theme/Logo";
 import { Card, ButtonPrimary } from "../theme/ui";
 
-// Kept in sync with RequestFeed.jsx, the homepage, and backend-scripts/seed.js —
-// same 12 subjects everywhere, so filters and requests actually match.
 const SUBJECTS = [
   "DBMS", "Operating Systems", "Computer Networks", "OOP Concepts",
   "Data Structures", "Circuit Theory", "Digital Logic", "Thermodynamics",

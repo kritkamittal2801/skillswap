@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route , useLocation } from "react-router-dom";
 
 import Signup from "./pages/Signup";
 import Login from "./pages/Login";
@@ -13,11 +13,15 @@ import socket from "./socket";
 import NotificationBell from "./components/NotificationBell.jsx";
 import api from "./services/api.js";
 import SessionPage from "./pages/SessionPage.jsx";
+import MySessions from "./pages/MySessions.jsx";
 import HomePage from "./pages/Home.jsx";
 
 function App() {
   const [notifications, setNotifications] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState([]);
+  const location = useLocation();
+const hideNotificationBellOn = ["/", "/home", "/login", "/signup"];
+const showNotificationBell = !hideNotificationBellOn.includes(location.pathname);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -94,7 +98,9 @@ function App() {
 
   return (
     <>
-      <NotificationBell notifications={notifications} />
+      {showNotificationBell && (
+  <NotificationBell notifications={notifications} setNotifications={setNotifications} />
+)}
 
       <Routes>
         <Route path="/signup" element={<Signup />} />
@@ -128,9 +134,19 @@ function App() {
           element={<RequestDetail onlineUsers={onlineUsers} />}
         />
 
+        <Route
+          path="/sessions"
+          element={
+            <ProtectedRoute>
+              <MySessions />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/sessions/:id" element={<SessionPage />} />
 
-        <Route path ="/home" element ={<HomePage />}></Route>
+          <Route path="/" element={<HomePage />} />
+        <Route path ="/home" element ={<HomePage />}/>
       </Routes>
     </>
   );

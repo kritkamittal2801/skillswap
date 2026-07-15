@@ -8,7 +8,6 @@ import { COLORS, TEXT_MUTED, CARD_SHADOW } from "../theme/theme";
 import { Logo } from "../theme/Logo";
 import { ButtonPrimary } from "../theme/ui";
 
-// Kept in sync with backend-scripts/seed.js and the homepage — same subject list everywhere.
 const SUBJECTS = [
   "DBMS", "Operating Systems", "Computer Networks", "OOP Concepts",
   "Data Structures", "Circuit Theory", "Digital Logic", "Thermodynamics",

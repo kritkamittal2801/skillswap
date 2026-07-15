@@ -15,6 +15,7 @@ import sessionRoutes from "./routes/session.routes.js";
 import ratingRoutes from "./routes/rating.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import { User } from "./models/User.js";
+import statsRoutes from "./routes/stats.routes.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -26,14 +27,13 @@ const io = new Server(server, {
 });
 setIo(io);
 
-// CONNECT DATABASE
 connectDB();
 
-// MIDDLEWARE
+
 app.use(cors());
 app.use(express.json());
 
-// ROUTES
+
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/requests", requestRoutes);
@@ -42,6 +42,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/ratings", ratingRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/stats",statsRoutes);
 
 app.get("/", (req, res) => {
   res.send("SkillSwap API Running");

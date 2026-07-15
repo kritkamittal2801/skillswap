@@ -74,26 +74,32 @@ if (mode === "barter") {
     
     const matches = await findMatches( request.topics,request.requester );
     console.log(matches);
-    
+
+    const modeText = mode === "paid" ? `${coinAmount} coins` : "barter";
+    const matchMessage = `${user.username} posted a ${subject} request · ${modeText}`;
+
     for (const match of matches) {
-      
-  const notification =
-    await Notification.create({
-      recipient:
-        match.user._id,
 
-      message:
-        "A new request matches your skills",
-    });
+      const notification =
+        await Notification.create({
+          recipient:
+            match.user._id,
 
-    
-  emitNotification(
-    match.user._id.toString(),
-    notification
-  );
+          message: matchMessage,
 
-  
-}
+          type: "match",
+
+          relatedRequest: request._id,
+        });
+
+
+      emitNotification(
+        match.user._id.toString(),
+        notification
+      );
+
+
+    }
 
     res.status(201).json({
       success: true,

@@ -6,7 +6,8 @@ import { COLORS, TEXT_MUTED, CARD_SHADOW } from "../theme/theme";
 import { Logo } from "../theme/Logo";
 import { Card, ButtonPrimary } from "../theme/ui";
 
-const COLLEGES = ["DU", "DTU", "NSUT", "VIPS", "IITD", "IIITD"];
+const COLLEGES = ["DU", "DTU", "NSUT", "VIPS", "IIT DELHI", "IIIT DELHI","BITS GOA","BITS PILLANI","IIT BOMBAY","IIT ROORKEE","IIT KANPUR",
+  "IIT HYDERABAD","IIT INDORE","IIT GUWAHATI","VIT VELLORE","IIT MANDI","THAPAR UNIVERSITY"];
 const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 
 const formatLastSeen = (lastSeen) => {

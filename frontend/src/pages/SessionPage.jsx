@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Video, Radio, Star, CheckCircle2, Circle, PartyPopper } from "lucide-react";
+import { Video, Radio, Star, CheckCircle2, Circle, PartyPopper, Clock } from "lucide-react";
 import api from "../services/api";
 import socket from "../socket";
 import { COLORS, CARD_SHADOW, CARD_SHADOW_LG } from "../theme/theme";
 import { Logo } from "../theme/Logo";
 import { Card, ButtonPrimary } from "../theme/ui";
+
+const MIN_SESSION_SECONDS = 5 * 60;
 
 const SessionPage = () => {
   const { id } = useParams();
@@ -13,67 +15,15 @@ const SessionPage = () => {
 
   const [session, setSession] = useState(null);
   const [seconds, setSeconds] = useState(0);
-  const [completed, setCompleted] = useState(false);
   const [error, setError] = useState("");
   const [stars, setStars] = useState(0);
   const [hoverStars, setHoverStars] = useState(0);
   const [review, setReview] = useState("");
   const [ratingSubmitted, setRatingSubmitted] = useState(false);
   const [alreadyRated, setAlreadyRated] = useState(false);
+  const [joining, setJoining] = useState(false);
 
-  const handleStart = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await api.put(
-        `/sessions/start/${id}`, {}, { headers: { Authorization: `Bearer ${token}` } },
-      );
-      setSession(response.data.session);
-    } catch (error) {
-      console.log(error.message);
-    }
-  };
-
-  useEffect(() => {
-    socket.on("sessionUpdated", (updatedSession) => {
-      if (updatedSession._id === id) setSession(updatedSession);
-    });
-    return () => socket.off("sessionUpdated");
-  }, [id]);
-
-  useEffect(() => {
-    socket.on("sessionStarted", (data) => {
-      if (data.sessionId === id) {
-        setSession((prev) => ({ ...prev, status: "active" }));
-      }
-    });
-    return () => socket.off("sessionStarted");
-  }, [id]);
-
-  useEffect(() => {
-    let interval;
-    if (session?.status === "active") {
-      interval = setInterval(() => setSeconds((prev) => prev + 1), 1000);
-    }
-    return () => clearInterval(interval);
-  }, [session]);
-
-  const formatTime = (seconds) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const confirmSession = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      await api.put(`/sessions/${id}/confirm`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      fetchSession();
-    } catch (error) {
-      console.log("CONFIRM SESSION ERROR:", error);
-      setError(error.response?.data?.message || "Something went wrong");
-    }
-  };
+  const recheckTimeout = useRef(null);
 
   const fetchSession = async () => {
     try {
@@ -100,14 +50,97 @@ const SessionPage = () => {
     checkRating();
   }, [id]);
 
-  const handleComplete = async () => {
+  useEffect(() => {
+    socket.on("sessionUpdated", (updatedSession) => {
+      if (updatedSession._id === id) setSession(updatedSession);
+    });
+    return () => socket.off("sessionUpdated");
+  }, [id]);
+
+  useEffect(() => {
+    socket.on("sessionStarted", (data) => {
+      if (data.sessionId === id) {
+        setSession((prev) => ({ ...prev, status: "active", startedAt: data.startedAt }));
+      }
+    });
+    return () => socket.off("sessionStarted");
+  }, [id]);
+
+  const handleStart = async () => {
     try {
       const token = localStorage.getItem("token");
-      await api.put(`/sessions/complete/${id}`, {}, { headers: { Authorization: `Bearer ${token}` } });
-      setCompleted(true);
+      const response = await api.put(
+        `/sessions/start/${id}`, {}, { headers: { Authorization: `Bearer ${token}` } },
+      );
+      setSession(response.data.session);
     } catch (error) {
-      setError(error.response?.data?.message || "Something went wrong");
+      console.log(error.message);
     }
+  };
+
+  /**
+   * Join meeting: marks the caller as joined server-side (the new
+   * "confirm" action), opens the real meeting link, then re-checks.
+   * If both have joined but the 5-minute floor hasn't passed yet, a
+   * timeout is scheduled to silently re-call join once it has, so the
+   * session still completes automatically without another click.
+   */
+  const handleJoin = async () => {
+    try {
+      setJoining(true);
+      const token = localStorage.getItem("token");
+      const response = await api.put(
+        `/sessions/join/${id}`, {}, { headers: { Authorization: `Bearer ${token}` } },
+      );
+
+      window.open(session.meetLink, "_blank", "noopener,noreferrer");
+      setSession(response.data.session);
+
+      if (response.data.bothJoined && !response.data.minimumElapsed) {
+        clearTimeout(recheckTimeout.current);
+        recheckTimeout.current = setTimeout(async () => {
+          try {
+            const retryToken = localStorage.getItem("token");
+            const retry = await api.put(
+              `/sessions/join/${id}`, {}, { headers: { Authorization: `Bearer ${retryToken}` } },
+            );
+            setSession(retry.data.session);
+          } catch (err) {
+            console.log(err);
+          }
+        }, response.data.secondsRemaining * 1000 + 500);
+      }
+    } catch (error) {
+      console.log(error);
+      setError(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setJoining(false);
+    }
+  };
+
+  useEffect(() => {
+    return () => clearTimeout(recheckTimeout.current);
+  }, []);
+
+  // Timer derived from the server's real startedAt, not a local counter --
+  // both users always see the same elapsed time, even if one joins late.
+  useEffect(() => {
+    if (session?.status === "active" && session.startedAt) {
+      const update = () => {
+        const elapsed = Math.floor((Date.now() - new Date(session.startedAt).getTime()) / 1000);
+        setSeconds(Math.max(0, elapsed));
+      };
+      update();
+      const interval = setInterval(update, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [session?.status, session?.startedAt]);
+
+  const formatTime = (totalSeconds) => {
+    const hrs = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   const submitRating = async () => {
@@ -142,10 +175,13 @@ const SessionPage = () => {
     );
   }
 
-  const isLearner = session.learner?._id === currentUser._id;
-  const myConfirmed = isLearner ? session.learnerConfirmed : session.helperConfirmed;
   const isPaid = session.request?.mode === "paid";
   const modeColor = isPaid ? COLORS.gold : COLORS.blue;
+  const myJoined = session.learner?._id === currentUser._id ? session.learnerJoined : session.helperJoined;
+  const bothJoined = session.learnerJoined && session.helperJoined;
+  const secondsUntilEligible = session.startedAt
+    ? Math.max(0, MIN_SESSION_SECONDS - Math.floor((Date.now() - new Date(session.startedAt).getTime()) / 1000))
+    : MIN_SESSION_SECONDS;
 
   /* ---------------------------------------------------------------- COMPLETED VIEW */
   if (session?.status === "completed") {
@@ -313,8 +349,8 @@ const SessionPage = () => {
           {/* -------------------------------------------------------- PARTICIPANTS */}
           <div className="grid grid-cols-2 gap-4">
             {[
-              { role: "Learner", person: session.learner, confirmed: session.learnerConfirmed, color: COLORS.blue },
-              { role: "Helper", person: session.helper, confirmed: session.helperConfirmed, color: COLORS.green },
+              { role: "Learner", person: session.learner, joined: session.learnerJoined, color: COLORS.blue },
+              { role: "Helper", person: session.helper, joined: session.helperJoined, color: COLORS.green },
             ].map((p) => (
               <div key={p.role} className="rounded-lg p-4" style={{ background: "#1A1010" }}>
                 <div className="text-[10px] font-mono uppercase tracking-wider mb-2.5" style={{ color: p.color }}>
@@ -329,9 +365,9 @@ const SessionPage = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="text-sm font-medium truncate">{p.person?.username}</div>
-                    <div className="flex items-center gap-1.5 text-xs mt-0.5" style={{ color: p.confirmed ? COLORS.green : "rgba(255,255,255,0.4)" }}>
-                      {p.confirmed ? <CheckCircle2 className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
-                      {p.confirmed ? "Confirmed" : "Not confirmed"}
+                    <div className="flex items-center gap-1.5 text-xs mt-0.5" style={{ color: p.joined ? COLORS.green : "rgba(255,255,255,0.4)" }}>
+                      {p.joined ? <CheckCircle2 className="w-3 h-3" /> : <Circle className="w-3 h-3" />}
+                      {p.joined ? "Joined" : "Not joined yet"}
                     </div>
                   </div>
                 </div>
@@ -340,14 +376,16 @@ const SessionPage = () => {
           </div>
         </Card>
 
-        {(isLearner && !session.helperConfirmed) && (
-          <div className="text-sm text-center mb-5 py-3 rounded-lg" style={{ background: `${COLORS.blue}15`, color: COLORS.blue }}>
-            Waiting for helper confirmation...
+        {bothJoined && session.status === "active" && secondsUntilEligible > 0 && (
+          <div className="flex items-center justify-center gap-2 text-sm text-center mb-5 py-3 rounded-lg" style={{ background: `${COLORS.gold}15`, color: COLORS.gold }}>
+            <Clock className="w-4 h-4" />
+            Both joined — wrapping up automatically in about {Math.ceil(secondsUntilEligible / 60)} min
           </div>
         )}
-        {(!isLearner && !session.learnerConfirmed) && (
+
+        {!myJoined && session.status === "active" && (
           <div className="text-sm text-center mb-5 py-3 rounded-lg" style={{ background: `${COLORS.blue}15`, color: COLORS.blue }}>
-            Waiting for learner confirmation...
+            Join the meeting when you're ready to start.
           </div>
         )}
 
@@ -359,30 +397,18 @@ const SessionPage = () => {
 
         {/* -------------------------------------------------------- ACTIONS */}
         <div className="space-y-3">
-          <a href={session.meetLink} target="_blank" rel="noreferrer" className="block">
-            <ButtonPrimary className="w-full justify-center py-4 text-base">
-              <Video className="w-4 h-4" /> Join meeting
-            </ButtonPrimary>
-          </a>
-
-          {session.status === "scheduled" && (
+          {session.status === "scheduled" ? (
             <button
               onClick={handleStart}
-              className="w-full py-3.5 rounded-xl text-sm font-medium border transition-colors hover:bg-white/[0.03]"
+              className="w-full py-4 rounded-xl text-sm font-medium border transition-colors hover:bg-white/[0.03]"
               style={{ color: COLORS.blue, borderColor: `${COLORS.blue}66` }}
             >
               Start session
             </button>
-          )}
-
-          {session.status === "active" && !myConfirmed && (
-            <button
-              onClick={confirmSession}
-              className="w-full py-3.5 rounded-xl text-sm font-medium border transition-colors hover:bg-white/[0.03]"
-              style={{ color: COLORS.green, borderColor: `${COLORS.green}66` }}
-            >
-              Mark session done
-            </button>
+          ) : (
+            <ButtonPrimary onClick={handleJoin} disabled={joining} className="w-full justify-center py-4 text-base">
+              <Video className="w-4 h-4" /> {joining ? "Joining..." : myJoined ? "Rejoin meeting" : "Join meeting"}
+            </ButtonPrimary>
           )}
         </div>
       </div>

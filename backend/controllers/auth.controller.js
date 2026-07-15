@@ -8,8 +8,6 @@ const signup = async (req, res) => {
 
         const { username, email, password , college , year } = req.body;
 
-
-        // CHECK IF USER EXISTS
         const existingUser = await User.findOne({
             $or: [{ email }, { username }]
         });
@@ -21,7 +19,6 @@ const signup = async (req, res) => {
         }
 
 
-        // CREATE USER
         const user = await User.create({
             username,
             email,
@@ -47,8 +44,6 @@ const signup = async (req, res) => {
 };
 
 
-
-// LOGIN CONTROLLER
 const login = async (req, res) => {
 
     try {
@@ -56,7 +51,6 @@ const login = async (req, res) => {
         const { email, password } = req.body;
 
 
-        // FIND USER
         const user = await User.findOne({ email });
 
         if (!user) {
@@ -76,7 +70,6 @@ const login = async (req, res) => {
         }
 
 
-        // GENERATE TOKEN
         const accessToken = user.generateAccessToken();
 
         const userResponse = user.toObject();

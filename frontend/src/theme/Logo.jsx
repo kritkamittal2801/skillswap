@@ -1,13 +1,5 @@
 import { COLORS } from "./theme";
 
-/**
- * SkillSwap logo — the shared flame: one candle lighting another,
- * split into two interlocked halves. Use on every page's nav/footer
- * so the brand mark never drifts between pages.
- *
- *   import { Mark, Wordmark } from "../theme/Logo";
- *   <Mark size={28} /> <Wordmark />
- */
 export function Mark({ size = 32 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 40 40" fill="none">
@@ -17,7 +9,6 @@ export function Mark({ size = 32 }) {
   );
 }
 
-/** Wordmark — "Skill" in off-white, "Swap" in the brand red. */
 export function Wordmark({ size = "text-lg" }) {
   return (
     <span className={`font-display italic font-medium tracking-tight ${size}`} style={{ color: "#ECE8E1" }}>
@@ -26,7 +17,6 @@ export function Wordmark({ size = "text-lg" }) {
   );
 }
 
-/** Convenience: icon + wordmark together, as used in every nav/footer. */
 export function Logo({ size = 24, textSize = "text-lg" }) {
   return (
     <span className="flex items-center gap-2.5">

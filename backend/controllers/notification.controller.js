@@ -29,14 +29,14 @@ async (req, res) => {
   }
 };
 
-export const markAsSeen =
+export const markAsRead =
 async (req, res) => {
   try {
     const notification =
       await Notification.findByIdAndUpdate(
         req.params.id,
         {
-          seen: true
+          isRead: true
         },
         {
           new: true

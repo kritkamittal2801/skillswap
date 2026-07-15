@@ -1,15 +1,5 @@
 import { COLORS, CARD_CLASS, STATUS_COLOR } from "./theme";
 
-/**
- * SkillSwap — shared UI primitives
- * -----------------------------------------------------------------------
- * Buttons, cards, and status indicators used identically across Home,
- * Login, Signup, Dashboard, RequestFeed, etc. Import these instead of
- * re-typing className strings on every page.
- * -----------------------------------------------------------------------
- */
-
-/** Primary action button — solid red, glow shadow. Use for the one main action per screen. */
 export function ButtonPrimary({ children, className = "", ...props }) {
   return (
     <button
@@ -22,7 +12,7 @@ export function ButtonPrimary({ children, className = "", ...props }) {
   );
 }
 
-/** Secondary/ghost button — blue outline. Use for secondary actions ("cancel", "browse instead"). */
+
 export function ButtonGhost({ children, className = "", ...props }) {
   return (
     <button
@@ -34,7 +24,7 @@ export function ButtonGhost({ children, className = "", ...props }) {
   );
 }
 
-/** Elevated card — the standard surface for every panel, form, and list item on the site. */
+
 export function Card({ children, accent, className = "", style = {}, ...props }) {
   return (
     <div
@@ -47,7 +37,7 @@ export function Card({ children, accent, className = "", style = {}, ...props })
   );
 }
 
-/** Status dot — red (live), blue (matched/in-progress), green (solved). Keep this mapping consistent everywhere. */
+
 export function StatusDot({ status }) {
   const color = STATUS_COLOR[status] || COLORS.blue;
   return (
@@ -58,7 +48,6 @@ export function StatusDot({ status }) {
   );
 }
 
-/** Solid color pill/badge — for status labels, chips, tags. */
 export function Pill({ children, color = COLORS.red, textColor = "#fff", className = "" }) {
   return (
     <span
@@ -70,7 +59,6 @@ export function Pill({ children, color = COLORS.red, textColor = "#fff", classNa
   );
 }
 
-/** Standard form input — for Login/Signup/CreateRequest pages, matching the site's elevated-card aesthetic. */
 export function Input({ label, icon: Icon, className = "", ...props }) {
   return (
     <label className="block">

@@ -2,7 +2,7 @@ import express from "express";
 
 import {
   getNotifications,
-  markAsSeen
+  markAsRead
 }
 from "../controllers/notification.controller.js";
 
@@ -18,9 +18,9 @@ router.get(
 );
 
 router.put(
-  "/:id/seen",
+  "/:id/read",
   verifyJWT,
-  markAsSeen
+  markAsRead
 );
 
 export default router;
