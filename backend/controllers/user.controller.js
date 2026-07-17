@@ -41,7 +41,7 @@ const updateProfile = async (req, res) => {
   if (skillTags.length > 0) {
     user.skillTags = skillTags;
   }
-  
+}
 
       if (college) user.college = college;
       if (year) user.year = year;

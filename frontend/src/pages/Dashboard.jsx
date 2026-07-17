@@ -41,7 +41,7 @@ const STATUS_STYLE = {
   cancelled: { label: "Cancelled", color: "rgba(255,255,255,0.35)" },
 };
 
-/** Rank tier, computed from real sessionsCompleted — a label over real data, not a fabricated stat. */
+
 const getRank = (sessionsCompleted) => {
   if (sessionsCompleted >= 25) return { label: "Top Helper", color: COLORS.gold };
   if (sessionsCompleted >= 10) return { label: "Trusted Helper", color: COLORS.green };
@@ -49,7 +49,6 @@ const getRank = (sessionsCompleted) => {
   return { label: "Newcomer", color: "rgba(255,255,255,0.5)" };
 };
 
-/** Simple, honest donut: earned vs spent, no fabricated trend data. */
 function CoinsDonut({ earned, spent }) {
   const total = earned + spent;
   const earnedPct = total > 0 ? earned / total : 0.5;
@@ -60,6 +59,11 @@ function CoinsDonut({ earned, spent }) {
     <div className="flex items-center gap-6">
       <svg width="100" height="100" viewBox="0 0 100 100" className="-rotate-90 shrink-0">
         <circle cx="50" cy="50" r="40" fill="none" stroke="#1A1010" strokeWidth="12" />
+        <circle
+          cx="50" cy="50" r="40" fill="none"
+          stroke={COLORS.red} strokeWidth="12"
+          strokeDasharray={`${circumference} ${circumference}`}
+        />
         <circle
           cx="50" cy="50" r="40" fill="none"
           stroke={COLORS.green} strokeWidth="12"
