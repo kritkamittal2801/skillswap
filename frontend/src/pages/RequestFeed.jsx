@@ -6,7 +6,7 @@ import RequestCard from "../components/RequestCard";
 import { AuthContext } from "../contexts/AuthContext.jsx";
 import { COLORS, TEXT_MUTED, CARD_SHADOW } from "../theme/theme.js";
 import { Logo } from "../theme/Logo.jsx";
-import { ButtonPrimary } from "../theme/ui.js";
+import { ButtonPrimary } from "../theme/ui.jsx";
 
 const SUBJECTS = [
   "DBMS", "Operating Systems", "Computer Networks", "OOP Concepts",
