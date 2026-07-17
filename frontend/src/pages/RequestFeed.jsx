@@ -1,6 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
-import { PlusCircle, ListFilter, Search } from "lucide-react";
+import { PlusCircle, ListFilter, Search,ArrowLeft } from "lucide-react";
 import api from "../services/api.js";
 import RequestCard from "../components/RequestCard";
 import { AuthContext } from "../contexts/AuthContext.jsx";
@@ -79,6 +79,11 @@ const RequestFeed = () => {
       <Link to="/home" className="fixed top-8 left-8 z-20"><Logo size={28} textSize="text-lg" /></Link>
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 pt-24 pb-12">
+
+        <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm mb-6" style={{ color: TEXT_MUTED }}>
+    <ArrowLeft className="w-4 h-4" /> Back to dashboard
+  </Link>
+
         <div className="flex items-center justify-between flex-wrap gap-4 mb-8">
           <div>
             <h1 className="font-display font-medium text-3xl">Learning Requests</h1>

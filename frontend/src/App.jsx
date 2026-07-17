@@ -8,15 +8,17 @@ import CreateRequest from "./pages/CreateRequest";
 import RequestFeed from "./pages/RequestFeed";
 import RequestDetail from "./pages/RequestDetail";
 import ProtectedRoute from "./routes/ProtectedRoute";
-import { useEffect, useState } from "react";
+import { useEffect, useState,useContext } from "react";
 import socket from "./socket";
 import NotificationBell from "./components/NotificationBell.jsx";
 import api from "./services/api.js";
 import SessionPage from "./pages/SessionPage.jsx";
 import MySessions from "./pages/MySessions.jsx";
 import HomePage from "./pages/Home.jsx";
+import { AuthContext } from "./contexts/AuthContext.jsx";
 
 function App() {
+  const {user}=useContext(AuthContext);
   const [notifications, setNotifications] = useState([]);
   const [onlineUsers, setOnlineUsers] = useState([]);
   const location = useLocation();
@@ -24,7 +26,6 @@ const hideNotificationBellOn = ["/", "/home", "/login", "/signup"];
 const showNotificationBell = !hideNotificationBellOn.includes(location.pathname);
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
 
     if (user) {
       socket.emit("registerUser", user._id);
@@ -41,25 +42,39 @@ const showNotificationBell = !hideNotificationBellOn.includes(location.pathname)
     };
   }, []);
 
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const token = localStorage.getItem("token");
+  const fetchNotifications = async () => {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
-        const response = await api.get("/notifications", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+    const response = await api.get("/notifications", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-        setNotifications(response.data.notifications);
-      } catch (error) {
-        console.log(error);
-      }
-    };
+    setNotifications(response.data.notifications);
+  } catch (error) {
+    console.log(error);
+  }
+};
 
+useEffect(() => {
+  if (user) {
     fetchNotifications();
-  }, []);
+  }
+}, [user]);
+
+useEffect(() => {
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === "visible") {
+      fetchNotifications();
+    }
+  };
+
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+}, [user]);
 
   useEffect(() => {
     socket.on("newNotification", (notification) => {
@@ -74,27 +89,27 @@ const showNotificationBell = !hideNotificationBellOn.includes(location.pathname)
   }, []);
 
   useEffect(() => {
-    socket.on("connect", () => {
-      console.log("Frontend connected:", socket.id);
+  socket.on("connect", () => {
+    console.log("Frontend connected:", socket.id);
 
-      const user = JSON.parse(localStorage.getItem("user"));
+    const storedUser = JSON.parse(localStorage.getItem("user"));
 
-      if (user) {
-        console.log("Registering user:", user._id);
+    if (storedUser) {
+      console.log("Registering user:", storedUser._id);
+      socket.emit("registerUser", storedUser._id);
+      fetchNotifications();
+    }
+  });
 
-        socket.emit("registerUser", user._id);
-      }
-    });
+  socket.on("connect_error", (error) => {
+    console.log("Connection error:", error.message);
+  });
 
-    socket.on("connect_error", (error) => {
-      console.log("Connection error:", error.message);
-    });
-
-    return () => {
-      socket.off("connect");
-      socket.off("connect_error");
-    };
-  }, []);
+  return () => {
+    socket.off("connect");
+    socket.off("connect_error");
+  };
+}, []);
 
   return (
     <>

@@ -5,8 +5,11 @@ dotenv.config();
   apiKey: process.env.GEMINI_API_KEY,
 });
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export const extractTopics = async (
-  text
+  text,
+  retries = 2
 ) => {
 
   const prompt = `
@@ -31,28 +34,45 @@ Text:
 ${text}
 `;
 
-  const response =
-    await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
-    });
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+      });
 
-  const cleaned =
-    response.text
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
+      const cleaned = response.text
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
 
-  try {
-    return JSON.parse(cleaned);
-  } catch (error) {
-    console.log(
-      "Topic extraction parse error:",
-      cleaned
-    );
+      try {
+        return JSON.parse(cleaned);
+      } catch (parseError) {
+        console.log("Topic extraction parse error:", cleaned);
+        return [];
+      }
+    } catch (apiError) {
+      const isOverloaded =
+        apiError?.status === 503 ||
+        apiError?.message?.toLowerCase().includes("overloaded");
 
-    return [];
+      console.log(
+        `Gemini extractTopics attempt ${attempt + 1} failed:`,
+        apiError.message
+      );
+
+      if (isOverloaded && attempt < retries) {
+        await sleep(1000 * (attempt + 1)); // 1s, then 2s
+        continue;
+      }
+
+      
+      return [];
+    }
   }
+
+  return [];
 };
 
 export const expandSkills = async (

@@ -39,20 +39,15 @@ const RequestCard = ({ request }) => {
           {request.coinAmount} coins
         </div>
       ) : (
-        request.exchangeTopics?.length > 0 && (
-          <div className="mb-4">
-            <div className="text-xs mb-1.5" style={{ color: TEXT_MUTED }}>Can teach in exchange:</div>
-            <div className="flex flex-wrap gap-1.5">
-              {request.exchangeTopics.slice(0, 3).map((topic) => (
-                <span key={topic} className="text-xs border border-white/10 rounded-full px-2.5 py-1" style={{ color: COLORS.blue, borderColor: `${COLORS.blue}44` }}>
-                  {topic}
-                </span>
-              ))}
-            </div>
-          </div>
-        )
-      )}
-
+  request.barterOffer && (
+    <div className="mb-4">
+      <div className="text-xs mb-1.5" style={{ color: TEXT_MUTED }}>Can teach in exchange:</div>
+      <p className="text-sm leading-relaxed" style={{ color: COLORS.blue }}>
+        {request.barterOffer}
+      </p>
+    </div>
+  )
+)}
       <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full border flex items-center justify-center font-display italic text-xs shrink-0"

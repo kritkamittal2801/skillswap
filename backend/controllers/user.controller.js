@@ -35,10 +35,13 @@ const updateProfile = async (req, res) => {
 
       
       if (skillsOffered) {
-        const skillTags = await expandSkills(skillsOffered);
-        user.skillsOffered = skillsOffered;
-        user.skillTags = skillTags;
-      }
+  user.skillsOffered = skillsOffered;
+
+  const skillTags = await expandSkills(skillsOffered);
+  if (skillTags.length > 0) {
+    user.skillTags = skillTags;
+  }
+  
 
       if (college) user.college = college;
       if (year) user.year = year;

@@ -6,9 +6,7 @@ import { COLORS, TEXT_MUTED, CARD_SHADOW } from "../theme/theme";
 import { Logo } from "../theme/Logo";
 import { Card, Input, ButtonPrimary } from "../theme/ui";
 
-// Kept in sync with backend-scripts/seed.js — same colleges/years, so real
-// signups and seeded data stay consistent.
-const COLLEGES = ["DU", "DTU", "NSUT", "VIPS", "IITD", "IIITD"];
+const COLLEGES = ["DU", "DTU", "NSUT", "VIPS", "IIT DELHI", "IIIT DELHI","BITS GOA","BITS PILLANI","IIT BOMBAY"];
 const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year"];
 
 const STEPS = [

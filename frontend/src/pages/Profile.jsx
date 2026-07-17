@@ -143,12 +143,10 @@ const Profile = () => {
               <h1 className="font-display font-medium text-2xl truncate">{profile.username}</h1>
               <p className="text-sm truncate" style={{ color: TEXT_MUTED }}>{profile.email}</p>
               <div className="flex items-center gap-3 mt-1.5 text-xs flex-wrap">
-                <span style={{ color: profile.isOnline ? COLORS.green : TEXT_MUTED }}>
-                  {profile.isOnline ? "Active now" : formatLastSeen(profile.lastSeen)}
-                </span>
+                
                 {memberSince && (
                   <>
-                    <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
+                    
                     <span style={{ color: TEXT_MUTED }}>Member since {memberSince}</span>
                   </>
                 )}
@@ -165,7 +163,7 @@ const Profile = () => {
             {profile.rating > 0 && (
               <div className="flex items-center gap-2">
                 <Star className="w-4 h-4" style={{ fill: COLORS.gold, color: COLORS.gold }} />
-                <span className="font-display font-medium text-lg">{profile.rating.toFixed(1)}</span>
+                <span className="font-display font-medium text-lg">{profile.rating.toFixed(2)}</span>
                 {profile.ratingCount > 0 && (
                   <span className="text-xs" style={{ color: TEXT_MUTED }}>({profile.ratingCount} reviews)</span>
                 )}

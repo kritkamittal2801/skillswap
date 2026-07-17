@@ -223,7 +223,7 @@ const Dashboard = () => {
               </div>
               <div className="flex items-center gap-2 rounded-full border border-white/10 px-3 py-1.5">
                 <Star className="w-3.5 h-3.5" style={{ fill: COLORS.gold, color: COLORS.gold }} />
-                <span className="text-sm font-medium">{s.averageRating}</span>
+                <span className="text-sm font-medium">{Number(s.averageRating || 0).toFixed(2)}</span>
                 <span className="text-xs" style={{ color: TEXT_MUTED }}>({s.totalReviews} reviews)</span>
               </div>
             </div>
