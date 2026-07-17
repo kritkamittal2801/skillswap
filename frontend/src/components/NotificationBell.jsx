@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
-import { COLORS } from "../theme/theme";
-import api from "../services/api";
-import NotificationPanel from "./NotificationPanel";
+import { COLORS } from "../theme/theme.js";
+import api from "../services/api.js";
+import NotificationPanel from "./NotificationPanel.jsx";
 
 const NotificationBell = ({ notifications, setNotifications }) => {
   const [open, setOpen] = useState(false);

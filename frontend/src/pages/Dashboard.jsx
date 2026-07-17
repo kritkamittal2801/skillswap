@@ -4,11 +4,11 @@ import {
   LayoutDashboard, ListChecks, PlusCircle, User, LogOut,
   DollarSign, Star, BookOpen, Award, CheckCircle2, ArrowRight,
 } from "lucide-react";
-import api from "../services/api";
+import api from "../services/api.js";
 import { AuthContext } from "../contexts/AuthContext.jsx";
-import { COLORS, BG, TEXT_MUTED, CARD_SHADOW } from "../theme/theme";
-import { Logo } from "../theme/Logo";
-import { Card, ButtonPrimary } from "../theme/ui";
+import { COLORS, BG, TEXT_MUTED, CARD_SHADOW } from "../theme/theme.js";
+import { Logo } from "../theme/Logo.jsx";
+import { Card, ButtonPrimary } from "../theme/ui.jsx";
 
 const NAV_ITEMS = [
   { label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },

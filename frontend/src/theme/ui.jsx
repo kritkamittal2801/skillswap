@@ -1,4 +1,4 @@
-import { COLORS, CARD_CLASS, STATUS_COLOR } from "./theme";
+import { COLORS, CARD_CLASS, STATUS_COLOR } from "./theme.js";
 
 export function ButtonPrimary({ children, className = "", ...props }) {
   return (

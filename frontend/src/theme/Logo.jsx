@@ -1,4 +1,4 @@
-import { COLORS } from "./theme";
+import { COLORS } from "./theme.js";
 
 export function Mark({ size = 32 }) {
   return (

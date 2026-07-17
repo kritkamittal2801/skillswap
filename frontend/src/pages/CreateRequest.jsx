@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Coins, Users, MessageSquare } from "lucide-react";
-import api from "../services/api";
-import { COLORS, TEXT_MUTED, CARD_SHADOW, CARD_SHADOW_LG } from "../theme/theme";
-import { Logo } from "../theme/Logo";
-import { Card, ButtonPrimary } from "../theme/ui";
+import api from "../services/api.js";
+import { COLORS, TEXT_MUTED, CARD_SHADOW, CARD_SHADOW_LG } from "../theme/theme.js";
+import { Logo } from "../theme/Logo.jsx";
+import { Card, ButtonPrimary } from "../theme/ui.jsx";
 
 const SUBJECTS = [
   "DBMS", "Operating Systems", "Computer Networks", "OOP Concepts",

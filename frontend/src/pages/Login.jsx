@@ -2,10 +2,10 @@ import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Star } from "lucide-react";
 import { AuthContext } from "../contexts/AuthContext.jsx";
-import api from "../services/api";
-import { COLORS, TEXT_MUTED, CARD_SHADOW, CARD_SHADOW_LG } from "../theme/theme";
-import { Logo } from "../theme/Logo";
-import { Card, Input, ButtonPrimary } from "../theme/ui";
+import api from "../services/api.js";
+import { COLORS, TEXT_MUTED, CARD_SHADOW, CARD_SHADOW_LG } from "../theme/theme.js";
+import { Logo } from "../theme/Logo.jsx";
+import { Card, Input, ButtonPrimary } from "../theme/ui.jsx";
 import { useLocation} from "react-router-dom";
 
 const Login = () => {

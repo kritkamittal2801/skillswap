@@ -1,11 +1,11 @@
 import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
-import api from "../services/api";
+import api from "../services/api.js";
 import { AuthContext } from "../contexts/AuthContext.jsx";
-import { COLORS, TEXT_MUTED, CARD_SHADOW } from "../theme/theme";
-import { Logo } from "../theme/Logo";
-import { Card } from "../theme/ui";
+import { COLORS, TEXT_MUTED, CARD_SHADOW } from "../theme/theme.js";
+import { Logo } from "../theme/Logo.jsx";
+import { Card } from "../theme/ui.jsx";
 
 const STATUS_STYLE = {
   scheduled: { label: "Scheduled", color: COLORS.blue },

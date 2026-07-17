@@ -1,4 +1,4 @@
-import { COLORS, TEXT_MUTED } from "../theme/theme";
+import { COLORS, TEXT_MUTED } from "../theme/theme.js";
 
 const NotificationCard = ({ notification, onClick }) => {
   const isUnread = !notification.isRead;

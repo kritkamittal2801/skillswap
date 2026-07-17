@@ -1,19 +1,19 @@
 import { BrowserRouter, Routes, Route , useLocation } from "react-router-dom";
 
-import Signup from "./pages/Signup";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Profile from "./pages/Profile";
-import CreateRequest from "./pages/CreateRequest";
-import RequestFeed from "./pages/RequestFeed";
-import RequestDetail from "./pages/RequestDetail";
-import ProtectedRoute from "./routes/ProtectedRoute";
+import Signup from "./pages/Signup.jsx";
+import Login from "./pages/Login.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import Profile from "./pages/Profile.jsx";
+import CreateRequest from "./pages/CreateRequest.jsx";
+import RequestFeed from "./pages/RequestFeed.jsx";
+import RequestDetail from "./pages/RequestDetail.jsx";
+import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import { useEffect, useState,useContext } from "react";
-import socket from "./socket";
+import socket from "./socket.js";
 import NotificationBell from "./components/NotificationBell.jsx";
 import api from "./services/api.js";
 import SessionPage from "./pages/SessionPage.jsx";
-import MySessions from "./pages/MySessions.jsx";
+import MySessions from "./pages/Mysessions.jsx";
 import HomePage from "./pages/Home.jsx";
 import { AuthContext } from "./contexts/AuthContext.jsx";
 

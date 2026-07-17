@@ -1,11 +1,11 @@
 import { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Video, Radio, Star, CheckCircle2, Circle, PartyPopper, Clock } from "lucide-react";
-import api from "../services/api";
-import socket from "../socket";
-import { COLORS, CARD_SHADOW, CARD_SHADOW_LG } from "../theme/theme";
-import { Logo } from "../theme/Logo";
-import { Card, ButtonPrimary } from "../theme/ui";
+import api from "../services/api.js";
+import socket from "../socket.js";
+import { COLORS, CARD_SHADOW, CARD_SHADOW_LG } from "../theme/theme.js";
+import { Logo } from "../theme/Logo.jsx";
+import { Card, ButtonPrimary } from "../theme/ui.jsx";
 
 const MIN_SESSION_SECONDS = 5 * 60;
 

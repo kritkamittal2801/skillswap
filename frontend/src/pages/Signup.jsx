@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { User, Mail, Lock, Eye, EyeOff, GraduationCap, Calendar } from "lucide-react";
-import api from "../services/api";
-import { COLORS, TEXT_MUTED, CARD_SHADOW } from "../theme/theme";
-import { Logo } from "../theme/Logo";
-import { Card, Input, ButtonPrimary } from "../theme/ui";
+import api from "../services/api.js";
+import { COLORS, TEXT_MUTED, CARD_SHADOW } from "../theme/theme.js";
+import { Logo } from "../theme/Logo.jsx";
+import { Card, Input, ButtonPrimary } from "../theme/ui.jsx";
 
 const COLLEGES = ["DU", "DTU", "NSUT", "VIPS", "IIT DELHI", "IIIT DELHI","BITS GOA","BITS PILLANI","IIT BOMBAY"];
 const YEARS = ["1st Year", "2nd Year", "3rd Year", "4th Year"];

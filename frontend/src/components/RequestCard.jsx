@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Coins } from "lucide-react";
-import { COLORS, TEXT_MUTED, CARD_SHADOW } from "../theme/theme";
-import { Card } from "../theme/ui";
+import { COLORS, TEXT_MUTED, CARD_SHADOW } from "../theme/theme.js";
+import { Card } from "../theme/ui.jsx";
 
 const RequestCard = ({ request }) => {
   const isPaid = request.mode === "paid";

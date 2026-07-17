@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { Coins, Users, Mail, Star, ArrowLeft, CheckCircle2 } from "lucide-react";
 import api from "../services/api.js";
-import { COLORS, TEXT_MUTED, CARD_SHADOW } from "../theme/theme";
-import { Logo } from "../theme/Logo";
-import { Card, ButtonPrimary } from "../theme/ui";
+import { COLORS, TEXT_MUTED, CARD_SHADOW } from "../theme/theme.js";
+import { Logo } from "../theme/Logo.jsx";
+import { Card, ButtonPrimary } from "../theme/ui.jsx";
 
 const formatLastSeen = (lastSeen) => {
   if (!lastSeen) return "Offline";

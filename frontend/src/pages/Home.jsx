@@ -6,7 +6,7 @@ import {
   CheckCircle2, XCircle, Send
 } from "lucide-react";
 
-import api from "../services/api";
+import api from "../services/api.js";
 
 const steps = [
   { n: "01", title: "Post your doubt", body: "Say what's stuck and tag the topic. Takes ten seconds — no forms, no waiting for office hours." },

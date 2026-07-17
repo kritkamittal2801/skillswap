@@ -1,6 +1,6 @@
 import { Bell } from "lucide-react";
-import { TEXT_MUTED, CARD_SHADOW } from "../theme/theme";
-import NotificationCard from "./NotificationCard";
+import { TEXT_MUTED, CARD_SHADOW } from "../theme/theme.js";
+import NotificationCard from "./NotificationCard.jsx";
 
 const NotificationPanel = ({ notifications, onNotificationClick }) => {
   return (
